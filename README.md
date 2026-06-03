@@ -33,12 +33,29 @@ slides et le rapport.
 | Fichier | Contenu |
 |---|---|
 | `analyse_stress_wellbeing.py` | Analyse complète : nettoyage → visualisation → régression → features maison → validation |
-| `slides_storytelling.md` | Contenu des 5 slides de l'oral + script + Q&A anticipé |
-| `report.md` | Rapport écrit (7 sections) |
+| `report.tex` | **Rapport LaTeX** (classe `article`) — version compilable du rapport |
+| `slides.tex` | **Slides LaTeX/Beamer** (thème Metropolis) — version compilable de l'oral |
+| `slides_storytelling.md` | Contenu des 5 slides + script oral + Q&A anticipé (source du `.tex`) |
+| `report.md` | Rapport écrit, 7 sections (source du `.tex`) |
 | `figures/` | Graphiques générés par le script (dont `00_probleme1_synthetique.png`) |
 | `requirements.txt` | Dépendances Python |
 | `wellbeing.csv` | Données **réelles** *Lifestyle & Wellbeing* (15 972 lignes brutes) |
 | `Global_Mental_Health_Dataset_2025.csv` | Données **synthétiques** abandonnées (preuve du « Problème 1 », corrélations ≈ 0) |
+
+## 📄 Compilation LaTeX (rapport & slides)
+Les figures doivent exister avant la compilation (lancer le script Python une fois).
+
+**Le plus simple — [Overleaf](https://www.overleaf.com)** (aucune installation) : créer
+un projet, glisser `report.tex`, `slides.tex` et le dossier `figures/`, puis compiler.
+
+**En local** (TeX Live / MiKTeX) :
+```bash
+pdflatex report.tex && pdflatex report.tex   # 2 passes (sommaire + références)
+pdflatex slides.tex && pdflatex slides.tex
+```
+> Thème des slides : **Metropolis**. Compatible `pdflatex` ; pour le rendu Fira Sans
+> d'origine, compiler avec **XeLaTeX** ou **LuaLaTeX**. Le script oral est dans les
+> `\note{}` (afficher avec `\setbeameroption{show notes}`).
 
 ## 🧭 Démarche (storytelling)
 1. **Problème 1** : un premier dataset « santé mentale » sans aucune corrélation → données **synthétiques**.

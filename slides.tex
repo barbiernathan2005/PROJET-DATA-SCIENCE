@@ -1,0 +1,213 @@
+% =============================================================================
+%  Slides (oral 5 min) — « Le stress se lit-il dans notre mode de vie ? »
+%  Introduction to Data Processing — MAM3, Université Côte d'Azur, 2025-2026
+%  Équipe : Hafssa, Thibaud, Nathan
+%
+%  Thème : metropolis (moderne, épuré).
+%  Compilation : pdflatex (Overleaf par défaut) fonctionne ; pour le rendu
+%  Fira Sans d'origine, compiler avec XeLaTeX ou LuaLaTeX.
+%  Le script oral est dans les \note{} (afficher avec \setbeameroption{show notes}).
+% =============================================================================
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{metropolis}
+\metroset{block=fill, numbering=fraction, progressbar=foot}
+
+\usepackage{iftex}
+\ifpdftex
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+\fi
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+
+\graphicspath{{figures/}}
+
+% Couleurs cohérentes avec les figures : rouge = ↑ stress, bleu = ↓ stress
+\definecolor{stressup}{HTML}{D1495B}
+\definecolor{stressdown}{HTML}{3A6EA5}
+\newcommand{\up}[1]{\textcolor{stressup}{#1}}
+\newcommand{\down}[1]{\textcolor{stressdown}{#1}}
+
+\title{Le stress se lit-il dans notre mode de vie ?}
+\subtitle{Introduction to Data Processing --- MAM3, 2025-2026}
+\author{Hafssa \quad\textbullet\quad Thibaud \quad\textbullet\quad Nathan}
+\institute{Université Côte d'Azur --- Polytech Nice Sophia}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+% ------------------------------------------------------------------ SLIDE 1 --
+\begin{frame}{Et si notre mode de vie trahissait notre stress ?}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{itemize}
+        \item Notre question : \alert{quels facteurs du quotidien expliquent le
+          stress ?}
+        \item 1\textsuperscript{er} essai : un dataset « santé mentale » (2\,500
+          lignes) qui ne disait \textbf{rien} ($|r|$ max $\approx 0{,}04$
+          $\Rightarrow$ \textbf{synthétique}).
+        \item Notre choix : une \textbf{vraie enquête} bien-être ---
+          \textbf{15\,971 personnes} (Authentic-Happiness).
+        \item Utile : applis bien-être, prévention santé, qualité de vie au travail.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{00_probleme1_synthetique.png}\\
+      {\scriptsize Dataset synthétique : corrélations $\approx 0$.}
+    \end{column}
+  \end{columns}
+  \note{On voulait comprendre ce qui stresse les gens. Premier piège : un dataset
+    « santé mentale » parfait en apparence, mais aucune variable n'en expliquait une
+    autre --- des données générées artificiellement. Pire, tout le thème en est rempli.
+    On a donc pris une vraie enquête sur près de 16 000 personnes, pour répondre à :
+    qu'est-ce qui fait monter notre stress ?}
+\end{frame}
+
+% ------------------------------------------------------------------ SLIDE 2 --
+\begin{frame}{15\,971 vies, 23 variables, un seul chiffre à expliquer}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{itemize}
+        \item Source \textbf{réelle} Authentic-Happiness $\cdot$ \textbf{15\,971
+          lignes} $\cdot$ \textbf{23 variables}.
+        \item Cible : \texttt{DAILY\_STRESS}, score \textbf{0 $\to$ 5}.
+        \item $\sim$20 variables numériques (sommeil, vie sociale, méditation, congés
+          non pris\dots) $+$ 2 catégorielles (Âge, Genre).
+        \item Nettoyage : 1 valeur cassée corrigée, \textbf{one-hot} Âge/Genre,
+          \textbf{standardisation}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{01_correlations.png}
+    \end{column}
+  \end{columns}
+  \note{Données réelles et auto-déclarées : chacun a rempli un questionnaire. On
+    explique une seule chose, le stress de 0 à 5. Comme toute vraie donnée, elle est
+    imparfaite : une valeur à corriger, des catégories à encoder, des échelles à
+    harmoniser. Premier constat : aucune variable seule ne ressort vraiment.}
+\end{frame}
+
+% ------------------------------------------------------------------ SLIDE 3 --
+\begin{frame}{4 indices maison --- dont un qui nous a surpris}
+  \begin{columns}[T]
+    \begin{column}{0.6\textwidth}
+      \footnotesize
+      \begin{tabular}{@{}lc@{}}
+        \toprule
+        \textbf{Feature maison} & \textbf{Corr.\ stress} \\
+        \midrule
+        \textbf{OVERWORK} \scriptsize(congés + irritab.\ $-$ passions) & \up{$+0{,}35$} \\
+        \textbf{HEALTHY\_HABITS} \scriptsize(sommeil+activité+médit.) & \down{$-0{,}22$} \\
+        \textbf{SLEEP $\times$ FLOW} \scriptsize(sommeil $\times$ immersion) & \down{$-0{,}16$} \\
+        \textbf{SOCIAL\_SUPPORT} \scriptsize(entourage+réseau+entraide) & \down{$-0{,}06$} \\
+        \bottomrule
+      \end{tabular}
+      \medskip
+      \begin{itemize}
+        \item 3 marchent --- surtout \up{\textbf{OVERWORK}}, meilleur signal de
+          l'étude.
+        \item \textbf{Pourquoi l'échec ?} réseau (\up{$+0{,}09$}) et entraide
+          (\up{$+0{,}07$}) vont avec \textbf{plus} de stress $\Rightarrow$ ils annulent
+          l'effet de l'entourage proche.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{03_coefficients_indices.png}
+    \end{column}
+  \end{columns}
+  \note{Le vrai travail est ici : on combine les variables en 4 indices. Trois
+    marchent très bien --- surtout OVERWORK, le surmenage, meilleur signal de toute
+    l'étude (+0.35). Mais le quatrième, le soutien social, échoue (-0.06) ! En
+    creusant : avoir un grand réseau et beaucoup aider les autres vont avec plus de
+    stress, ce qui annule l'effet des proches. Leçon : une feature combinée ne vaut que
+    si ses composantes vont dans le même sens --- et c'est la vérification qui permet de
+    le voir.}
+\end{frame}
+
+% ------------------------------------------------------------------ SLIDE 4 --
+\begin{frame}{Le stress se lit dans nos habitudes --- à 19\,\%}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{itemize}
+        \item Régression \textbf{linéaire}, split \textbf{80-20} $+$ \textbf{5-fold}.
+        \item $R^2$ (23 var) $=$ \textbf{0,19} $\cdot$ $R^2$ (4 indices) $=$
+          \textbf{0,13} $\cdot$ 5-fold $=$ \textbf{0,14 $\pm$ 0,01} (stable).
+        \item \up{\textbf{Montent}} : irritabilité \up{$+0{,}32$}, congés non pris
+          \up{$+0{,}18$}.
+        \item \down{\textbf{Baissent}} : méditation \down{$-0{,}15$}, sommeil
+          \down{$-0{,}13$}, revenu suffisant \down{$-0{,}12$}, temps passions
+          \down{$-0{,}09$}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{02_coefficients_base.png}
+    \end{column}
+  \end{columns}
+  \note{Le mode de vie explique environ 19 \% du stress --- modeste mais réel : le
+    stress est multifactoriel, c'est honnête. Le facteur le plus fort, l'irritabilité,
+    est en partie un symptôme du stress (prudence). Le plus actionnable : ne pas prendre
+    ses congés. À l'inverse, méditer, dormir, un revenu suffisant et du temps pour soi
+    apaisent. Et la validation 5-fold est très stable : pas de surapprentissage.}
+\end{frame}
+
+% ------------------------------------------------------------------ SLIDE 5 --
+\begin{frame}{Des données réelles racontent une histoire --- même quand elles nous
+    contredisent}
+  \begin{itemize}
+    \item Leviers \textbf{actionnables} : congés, méditation, sommeil, temps pour ses
+      passions.
+    \item Notre feature \up{\textbf{OVERWORK}} $=$ meilleur prédicteur ($+0{,}35$).
+    \item Un \textbf{échec} riche : \texttt{SOCIAL\_SUPPORT} rappelle qu'une hypothèse
+      se \textbf{vérifie} (corrélation $\neq$ intuition).
+    \item Limites : auto-déclaré, échelle 0-5, \textbf{corrélation $\neq$ causalité}.
+    \item Pistes : régression ordinale, revoir le soutien social, segmenter par âge.
+  \end{itemize}
+  \note{On a identifié des leviers concrets, et notre indice de surmenage est le
+    meilleur prédicteur. Mais notre plus belle leçon vient d'un échec : le soutien
+    social, pourtant attendu protecteur, n'explique rien ici --- il a fallu l'accepter
+    et le comprendre. C'est ça, travailler de vraies données : elles racontent une
+    histoire, même quand elle contredit nos intuitions. Des données fabriquées, elles,
+    ne racontent rien. Merci.}
+\end{frame}
+
+% ------------------------------------------------------------------- Q&A -----
+\begin{frame}{Questions anticipées}
+  \footnotesize
+  \begin{itemize}
+    \item \textbf{Pourquoi linéaire et pas logistique ?} cible 0-5 continue $+$ on veut
+      \textbf{interpréter} les coefficients ; la logistique $=$ piste d'amélioration.
+    \item \textbf{$R^2$ de 0,19, c'est faible ?} le stress est multifactoriel et
+      auto-déclaré ; un $R^2$ modéré est \textbf{honnête}. On vise l'explication. Le
+      5-fold ($\pm 0{,}01$) montre que c'est \textbf{stable}.
+    \item \textbf{L'irritabilité ($+0{,}32$), n'est-ce pas circulaire ?} en partie :
+      crier/bouder est aussi un \textit{symptôme} du stress. D'où le levier
+      \textbf{actionnable} $=$ congés non pris.
+    \item \textbf{Pourquoi garder une feature qui a échoué ?} pour montrer la
+      \textbf{démarche} : l'échec de \texttt{SOCIAL\_SUPPORT} nous a appris pourquoi
+      (composantes contradictoires).
+    \item \textbf{Données vraiment réelles ?} enquête identifiée $+$ imperfections du
+      réel ; le 1\textsuperscript{er} dataset avait des corrélations $\approx 0$ $=$
+      signature du synthétique.
+    \item \textbf{Circularité du score ?} on a \textbf{retiré}
+      \texttt{WORK\_LIFE\_BALANCE\_SCORE} (somme des colonnes $\to$ $R^2=1$ trompeur).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------------ MERCI -----
+\begin{frame}[standout]
+  Merci !\\[0.5em]
+  \small Des données \emph{réelles} racontent une histoire.\\
+  \small Des données \emph{fabriquées}, non.
+\end{frame}
+
+\end{document}
