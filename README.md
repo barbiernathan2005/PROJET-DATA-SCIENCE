@@ -13,9 +13,6 @@ réponses, enquête Authentic-Happiness) pour expliquer le **stress quotidien**
 
 ## 📦 Données
 Dataset : https://www.kaggle.com/ydalat/lifestyle-and-wellbeing-data
-1. Télécharge le CSV depuis Kaggle (connexion requise).
-2. Place-le dans ce dossier sous le nom **`wellbeing.csv`** (ou adapte la variable
-   `CSV` en haut de `analyse_stress_wellbeing.py`).
 
 ## ⚙️ Installation & exécution
 ```bash
