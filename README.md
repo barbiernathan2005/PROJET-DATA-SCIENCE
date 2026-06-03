@@ -7,7 +7,7 @@ réponses, enquête Authentic-Happiness) pour expliquer le **stress quotidien**
 (`DAILY_STRESS`, 0-5) à partir du mode de vie.
 
 ## 👥 Équipe
-- Haffsa
+- Hafssa
 - Thibaud
 - Nathan
 

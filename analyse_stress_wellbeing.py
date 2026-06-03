@@ -3,7 +3,7 @@
 analyse_stress_wellbeing.py
 ============================
 Projet « Introduction to Data Processing » — MAM3, Université Côte d'Azur, 2025-2026.
-Équipe : Haffsa, Thibaud, Nathan.
+Équipe : Hafssa, Thibaud, Nathan.
 
     « Le stress se lit-il dans notre mode de vie ? »
 

@@ -1,7 +1,7 @@
 # Le stress se lit-il dans notre mode de vie ?
 ### Rapport — *Introduction to Data Processing* (MAM3, 2025-2026)
 
-**Équipe :** Haffsa, Thibaud, Nathan
+**Équipe :** Hafssa, Thibaud, Nathan
 **Dépôt Git :** https://github.com/barbiernathan2005/PROJET-DATA-SCIENCE
 **Dataset :** *Lifestyle & Wellbeing Data* — Kaggle (ydalat), enquête Authentic-Happiness.
 
@@ -56,7 +56,7 @@ Nous sommes une équipe de **3 personnes**, coordonnée via un **dépôt Git** p
 ([barbiernathan2005/PROJET-DATA-SCIENCE](https://github.com/barbiernathan2005/PROJET-DATA-SCIENCE)).
 
 **Répartition des rôles :**
-- **Haffsa — Données & nettoyage :** chargement, sanity checks, encodage des
+- **Hafssa — Données & nettoyage :** chargement, sanity checks, encodage des
   catégories, gestion des valeurs manquantes.
 - **Nathan — Visualisation & features maison :** figures, conception et
   justification des indices, vérification de leur pertinence.
