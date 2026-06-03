@@ -1,7 +1,7 @@
 # Le stress se lit-il dans notre mode de vie ?
 ### Rapport — *Introduction to Data Processing* (MAM3, 2025-2026)
 
-**Équipe :** [Prénom 1], [Prénom 2], [Prénom 3]
+**Équipe :** Haffsa, Thibaud, Nathan
 **Dépôt Git :** [URL à compléter — ex. https://github.com/votre-equipe/projet-stress]
 **Dataset :** *Lifestyle & Wellbeing Data* — Kaggle (ydalat), enquête Authentic-Happiness.
 
