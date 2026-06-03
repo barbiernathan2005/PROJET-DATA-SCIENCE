@@ -7,9 +7,9 @@ réponses, enquête Authentic-Happiness) pour expliquer le **stress quotidien**
 (`DAILY_STRESS`, 0-5) à partir du mode de vie.
 
 ## 👥 Équipe
-- [Prénom 1]
-- [Prénom 2]
-- [Prénom 3]
+- Haffsa
+- Thibaud
+- Nathan
 
 ## 📦 Données
 Dataset : https://www.kaggle.com/ydalat/lifestyle-and-wellbeing-data
