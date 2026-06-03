@@ -1,10 +1,10 @@
-# Le stress se lit-il dans notre mode de vie ?
+# Combien vaut une voiture d'occasion ?
 
 Projet **Introduction to Data Processing** — MAM3, Université Côte d'Azur, 2025-2026.
 
-Régression **linéaire** sur le dataset **réel** *Lifestyle & Wellbeing* (**15 971**
-réponses, enquête Authentic-Happiness) pour expliquer le **stress quotidien**
-(`DAILY_STRESS`, 0-5) à partir du mode de vie.
+Régression **linéaire** sur le dataset **réel** *UK Used Cars* (**72 435** annonces de
+voitures d'occasion, 7 marques) pour prédire le **prix** (`price`, en £) à partir des
+caractéristiques du véhicule.
 
 ## 👥 Équipe
 - Hafssa
@@ -12,7 +12,8 @@ réponses, enquête Authentic-Happiness) pour expliquer le **stress quotidien**
 - Nathan
 
 ## 📦 Données
-Dataset : https://www.kaggle.com/ydalat/lifestyle-and-wellbeing-data
+- Dataset (EDA) : https://www.kaggle.com/code/harishkumardatalab/eda-of-multibrand-used-car-dataset
+- CSV utilisé (miroir) : https://github.com/Ajinkya017/Car_Dataset → `cars_dataset.csv`
 
 ## ⚙️ Installation & exécution
 ```bash
@@ -23,41 +24,40 @@ python -m venv .venv
 # source .venv/bin/activate
 
 pip install -r requirements.txt
-python analyse_stress_wellbeing.py
+python new_code.py                  # régression : prédiction du prix (+ figures)
+python probleme1_mental_health.py   # figure du « Problème 1 » (dataset synthétique)
 ```
-Les figures sont enregistrées dans `figures/` et les **chiffres clés** (R², facteurs
-les plus liés au stress…) sont affichés à la fin (« RÉCAP »), prêts à coller dans les
-slides et le rapport.
+Le script affiche la **performance** du modèle (R², RMSE) et les **coefficients**, et
+enregistre les figures dans `figures/`.
 
 ## 📁 Fichiers
 | Fichier | Contenu |
 |---|---|
-| `analyse_stress_wellbeing.py` | Analyse complète : nettoyage → visualisation → régression → features maison → validation |
-| `report.tex` | **Rapport LaTeX** (classe `article`) — version compilable du rapport |
-| `slides.tex` | **Slides LaTeX/Beamer** (thème Metropolis) — version compilable de l'oral |
-| `slides_storytelling.md` | Contenu des 5 slides + script oral + Q&A anticipé (source du `.tex`) |
-| `report.md` | Rapport écrit, 7 sections (source du `.tex`) |
-| `figures/` | Graphiques générés par le script (dont `00_probleme1_synthetique.png`) |
+| `new_code.py` | Régression linéaire : nettoyage → features maison → modèle → **R²/RMSE** → figures |
+| `probleme1_mental_health.py` | Régénère la figure du « Problème 1 » (corrélations ≈ 0 du dataset synthétique) |
+| `cars_dataset.csv` | Données **réelles** UK Used Cars (72 435 lignes) |
+| `Global_Mental_Health_Dataset_2025.csv` | Données **synthétiques** abandonnées (« Problème 1 ») |
+| `report.tex` / `report.pdf` | Rapport (LaTeX + PDF) |
+| `slides.tex` / `slides.pdf` | Slides de l'oral (Beamer Metropolis + PDF) |
+| `report.md` / `slides_storytelling.md` | Versions Markdown (sources du récit) |
+| `figures/` | Graphiques générés par les scripts |
 | `requirements.txt` | Dépendances Python |
-| `wellbeing.csv` | Données **réelles** *Lifestyle & Wellbeing* (15 972 lignes brutes) |
-| `Global_Mental_Health_Dataset_2025.csv` | Données **synthétiques** abandonnées (preuve du « Problème 1 », corrélations ≈ 0) |
 
 ## 📄 Compilation LaTeX (rapport & slides)
-Les figures doivent exister avant la compilation (lancer le script Python une fois).
+Lancer d'abord les scripts Python (les figures doivent exister).
 
 **Le plus simple — [Overleaf](https://www.overleaf.com)** (aucune installation) : créer
 un projet, glisser `report.tex`, `slides.tex` et le dossier `figures/`, puis compiler.
 
 **En local** (TeX Live / MiKTeX) :
 ```bash
-pdflatex report.tex && pdflatex report.tex   # 2 passes (sommaire + références)
+pdflatex report.tex && pdflatex report.tex
 pdflatex slides.tex && pdflatex slides.tex
 ```
 > Thème des slides : **Metropolis**. Compatible `pdflatex` ; pour le rendu Fira Sans
-> d'origine, compiler avec **XeLaTeX** ou **LuaLaTeX**. Le script oral est dans les
-> `\note{}` (afficher avec `\setbeameroption{show notes}`).
+> d'origine, compiler avec **XeLaTeX** ou **LuaLaTeX**.
 
 ## 🧭 Démarche (storytelling)
-1. **Problème 1** : un premier dataset « santé mentale » sans aucune corrélation → données **synthétiques**.
-2. **Problème 2** : sur de vraies données, aucune variable seule n'explique le stress.
-3. **Résolution** : des **features maison** (soutien social, habitudes saines, surmenage, sommeil×flow) rendent le modèle simple et interprétable.
+1. **Problème 1** : un premier dataset « santé mentale » sans aucune corrélation (|r| max ≈ 0.04) → données **synthétiques**, inexploitables.
+2. **Pivot** : un **vrai** dataset de voitures d'occasion → de vraies relations.
+3. **Résolution** : 2 features maison (`car_age`, `mileage_per_year`) + régression linéaire → on prédit le prix à **~74 %** (R² = 0.735).

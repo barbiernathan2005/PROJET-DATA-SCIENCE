@@ -1,10 +1,9 @@
 % =============================================================================
-%  Rapport — « Le stress se lit-il dans notre mode de vie ? »
+%  Rapport — « Combien vaut une voiture d'occasion ? »
 %  Introduction to Data Processing — MAM3, Université Côte d'Azur, 2025-2026
 %  Équipe : Hafssa, Thibaud, Nathan
 %
-%  Compilation : pdflatex (Overleaf par défaut). Pour un rendu typographique
-%  optimal, XeLaTeX/LuaLaTeX fonctionnent aussi (garde iftex ci-dessous).
+%  Compilation : pdflatex (Overleaf par défaut) ; XeLaTeX/LuaLaTeX aussi (garde iftex).
 %      pdflatex report.tex   (×2 pour le sommaire/les références)
 % =============================================================================
 \documentclass[11pt,a4paper]{article}
@@ -20,22 +19,19 @@
 \usepackage{booktabs}
 \usepackage{amsmath,amssymb}
 \usepackage{xcolor}
-\usepackage{pifont}      % \ding pour les verdicts ✓ / ✗
 \usepackage{caption}
 \usepackage{enumitem}
 \usepackage[hidelinks]{hyperref}
 
 \graphicspath{{figures/}}
 
-% Couleurs cohérentes avec les figures : rouge = ↑ stress, bleu = ↓ stress
-\definecolor{stressup}{HTML}{D1495B}
-\definecolor{stressdown}{HTML}{3A6EA5}
-\newcommand{\hot}[1]{\textcolor{stressup}{#1}}
-\newcommand{\cool}[1]{\textcolor{stressdown}{#1}}
-\newcommand{\cmark}{\textcolor{stressdown}{\ding{51}}}
-\newcommand{\xmark}{\textcolor{stressup}{\ding{55}}}
+% Couleurs : rouge = fait MONTER le prix, bleu = fait BAISSER le prix.
+\definecolor{priceup}{HTML}{2E7D32}
+\definecolor{pricedown}{HTML}{C62828}
+\newcommand{\priceUp}[1]{\textcolor{priceup}{#1}}    % vert = +cher
+\newcommand{\priceDn}[1]{\textcolor{pricedown}{#1}}  % rouge = -cher
 
-\title{\textbf{Le stress se lit-il dans notre mode de vie ?}\\[2pt]
+\title{\textbf{Combien vaut une voiture d'occasion ?}\\[2pt]
   \large Rapport --- \textit{Introduction to Data Processing} (MAM3, 2025-2026)}
 \author{Hafssa \quad\textbullet\quad Thibaud \quad\textbullet\quad Nathan}
 \date{Université Côte d'Azur --- Polytech Nice Sophia}
@@ -44,12 +40,9 @@
 \maketitle
 
 \noindent\textbf{Dépôt Git :} \url{https://github.com/barbiernathan2005/PROJET-DATA-SCIENCE}\\
-\textbf{Dataset :} \textit{Lifestyle \& Wellbeing Data} --- Kaggle (\texttt{ydalat}),
-enquête Authentic-Happiness.
+\textbf{Dataset :} \textit{100,000 UK Used Car Data} (Kaggle) --- 7 marques fusionnées.
 
-\medskip
-\hrule
-\medskip
+\medskip\hrule\medskip
 
 % =============================================================================
 \section{Business goal}
@@ -58,41 +51,35 @@ enquête Authentic-Happiness.
 \noindent\textbf{Quel est notre dataset ? Pourquoi est-il utile ?}
 
 \medskip
-Notre projet répond à une question simple et universelle : \textbf{quels facteurs de
-notre mode de vie sont liés à notre niveau de stress quotidien ?} Comprendre cela a
-une valeur concrète pour les applications de bien-être, les programmes de prévention
-santé et la qualité de vie au travail : si l'on identifie des leviers actionnables
-(sommeil, congés, méditation\dots), on peut formuler des recommandations utiles.
+Notre projet répond à une question concrète et universelle : \textbf{peut-on prédire le
+prix d'une voiture d'occasion à partir de ses caractéristiques ?} L'enjeu est réel : un
+bon modèle aide acheteurs et vendeurs à estimer un prix juste, alimente les plateformes
+de petites annonces et permet de \textbf{repérer les bonnes (et les mauvaises) affaires}.
 
 Notre parcours a commencé par un \textbf{échec instructif}. Notre premier dataset
 (\texttt{Global\_Mental\_Health\_Dataset\_2025.csv}, \textbf{2\,500 lignes}), sur la
-« santé mentale », semblait idéal pour notre toute première problématique --- \textit{peut-on
+« santé mentale », semblait idéal pour notre première problématique --- \textit{peut-on
 prédire le stress à partir du sommeil ?} Mais à l'analyse, \textbf{aucune variable
-n'était corrélée à une autre} : la corrélation maximale (hors diagonale) entre toutes
-les variables numériques ne valait que $|r| \approx 0{,}04$, et le couple
-sommeil\,$\leftrightarrow$\,stress tombait à $-0{,}02$ (Figure~\ref{fig:synth}). En
-enquêtant, nous avons compris que ces données étaient \textbf{générées artificiellement},
-pas mesurées : elles ne pouvaient rien nous apprendre. Nous avons aussi constaté que
-tout le thème « stress / burnout » sur Kaggle est saturé de jeux de données
-synthétiques. Première leçon, devenue notre fil rouge : \textit{vérifier la provenance
-et la réalité des données avant toute analyse.}
+n'était corrélée à une autre} : la corrélation maximale (hors diagonale) ne valait que
+$|r| \approx 0{,}04$, et le couple sommeil\,$\leftrightarrow$\,stress tombait à
+$-0{,}01$ (Figure~\ref{fig:synth}). Ces données étaient \textbf{générées
+artificiellement}, pas mesurées. Première leçon, devenue notre fil rouge :
+\textit{vérifier la provenance et la réalité des données avant toute analyse.}
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.62\linewidth]{00_probleme1_synthetique.png}
-  \caption{Le dataset abandonné (synthétique). La matrice de corrélation est
-    entièrement « éteinte » (toutes les cases $\approx 0$) : c'est la \textbf{signature
-    de données fabriquées} --- aucune relation exploitable, donc aucune histoire à
-    raconter, exactement l'inverse des données réelles (Figure~\ref{fig:corr}).}
+  \includegraphics[width=0.6\linewidth]{00_probleme1_synthetique.png}
+  \caption{Le dataset abandonné (synthétique). La matrice de corrélation est entièrement
+    « éteinte » (toutes les cases $\approx 0$) : c'est la \textbf{signature de données
+    fabriquées} --- aucune relation exploitable.}
   \label{fig:synth}
 \end{figure}
 
-Nous avons alors choisi un jeu de données \textbf{réel} : l'enquête \textit{Lifestyle
-\& Wellbeing} d'Authentic-Happiness, soit \textbf{15\,971 réponses authentiques}
-collectées dans le monde (2015-2020). Chaque répondant a renseigné ses habitudes de
-vie et son niveau de stress quotidien. Contrairement au premier dataset, ces données
-présentent de vraies relations exploitables --- et les imperfections typiques du réel
-(une valeur erronée à corriger), gage d'authenticité.
+Nous avons alors choisi un jeu de données \textbf{réel} : le dataset \textit{UK Used
+Cars} (annonces réelles de voitures d'occasion au Royaume-Uni, 7 marques : Audi, BMW,
+Ford, Hyundai, Skoda, Toyota, Volkswagen). Contrairement au premier, ces données
+présentent de \textbf{vraies relations exploitables} --- et les imperfections typiques du
+réel (années aberrantes, doublons), gage d'authenticité.
 
 % =============================================================================
 \section{Team management}
@@ -107,12 +94,12 @@ partagé.
 \medskip
 \noindent\textbf{Répartition des rôles :}
 \begin{itemize}[nosep,leftmargin=1.4em]
-  \item \textbf{Hafssa --- Données \& nettoyage :} chargement, sanity checks, encodage
-    des catégories, gestion des valeurs manquantes.
-  \item \textbf{Nathan --- Visualisation \& features maison :} figures, conception et
-    justification des indices, vérification de leur pertinence.
-  \item \textbf{Thibaud --- Modélisation \& storytelling :} régression, validation
-    croisée, interprétation, rédaction du récit et des slides.
+  \item \textbf{Hafssa --- Données \& nettoyage :} chargement, sanity checks, années
+    aberrantes et doublons, encodage des catégories.
+  \item \textbf{Nathan --- Visualisation \& features maison :} heatmap, boxplots,
+    conception des indices (\texttt{car\_age}, \texttt{mileage\_per\_year}).
+  \item \textbf{Thibaud --- Modélisation \& storytelling :} régression linéaire,
+    évaluation (R²/RMSE), interprétation, rédaction du récit et des slides.
 \end{itemize}
 
 \medskip
@@ -122,232 +109,176 @@ partagé.
   \toprule
   \textbf{Jour} & \textbf{Tâche} \\
   \midrule
-  Lun.\ 01/06 & Définition du problème, choix et chargement des données \\
-  Mar.\ 02/06 & Nettoyage, visualisation, première trame de storytelling \\
-  Mer.\ 03/06 & Features maison, régression linéaire, itérations \\
-  Jeu.\ 04/06 & Pipeline final, préparation de l'oral, dépôt des slides \\
+  Lun.\ 01/06 & Définition du problème, 1\textsuperscript{er} dataset (santé mentale) $\to$ abandon \\
+  Mar.\ 02/06 & Choix du dataset réel (voitures), chargement, nettoyage \\
+  Mer.\ 03/06 & Features maison, visualisation, régression linéaire \\
+  Jeu.\ 04/06 & Évaluation, pipeline final, préparation de l'oral \\
   Ven.\ 05/06 & Soutenance orale + finalisation du rapport \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-\medskip
-Les décisions importantes (choix du dataset, des features, message clé) ont été prises
-\textbf{collectivement}.
-
 % =============================================================================
 \section{Data visualisation}
 % =============================================================================
 
-\noindent\textbf{Description.} Le dataset contient \textbf{15\,971 lignes} et
-\textbf{23 variables}. La cible est \texttt{DAILY\_STRESS}, un score de stress
-quotidien de \textbf{0 (aucun) à 5 (très stressé)}, traité comme continu. Les
-explicatives sont de deux types :
+\noindent\textbf{Description.} Le dataset contient \textbf{72\,435 lignes} et
+\textbf{10 variables}. La cible est \texttt{price}, le prix de vente en \textbf{livres
+sterling (£)}. Les explicatives sont de deux types :
 \begin{itemize}[nosep,leftmargin=1.4em]
-  \item \textbf{$\sim$20 variables numériques} de mode de vie : \texttt{SLEEP\_HOURS},
-    \texttt{DAILY\_STEPS}, \texttt{SOCIAL\_NETWORK}, \texttt{CORE\_CIRCLE},
-    \texttt{SUPPORTING\_OTHERS}, \texttt{WEEKLY\_MEDITATION}, \texttt{FLOW},
-    \texttt{TIME\_FOR\_PASSION}, \texttt{LOST\_VACATION}, \texttt{DAILY\_SHOUTING},
-    \texttt{SUFFICIENT\_INCOME}, \texttt{PERSONAL\_AWARDS}, etc. ;
-  \item \textbf{2 variables catégorielles} : \texttt{AGE} (tranches) et \texttt{GENDER}.
+  \item \textbf{numériques} : \texttt{year}, \texttt{mileage}, \texttt{tax},
+    \texttt{mpg} (consommation), \texttt{engineSize} (cylindrée) ;
+  \item \textbf{catégorielles} : \texttt{model}, \texttt{transmission},
+    \texttt{fuelType} et \texttt{Make} (marque).
 \end{itemize}
 
-\noindent\textbf{Nettoyage (data wrangling).} La cible contenait une valeur non
-numérique (\texttt{'1/1/00'}), forcée en \texttt{NaN} puis retirée (15\,971 lignes
-conservées). \texttt{AGE} et \texttt{GENDER} ont été encodées en \textbf{one-hot}
-(éviter un faux ordre), et toutes les variables \textbf{standardisées} (moyenne 0,
-écart-type 1) pour comparer l'importance des coefficients.
+\noindent\textbf{Nettoyage (data wrangling).} Deux années manifestement erronées
+(\texttt{2060} et \texttt{1970}) ont été retirées, ainsi que les \textbf{doublons} : le
+dataset passe de \textbf{72\,435 à 71\,593 lignes}. Le carburant \texttt{Electric}, très
+rare, a été regroupé dans \texttt{Other}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.70\linewidth]{01_correlations.png}
-  \caption{Corrélation de chaque variable avec le stress. Barres horizontales triées
-    (\hot{rouge} = corrélation positive, \cool{bleu} = négative), axe partant de zéro,
-    palette à deux couleurs. \textit{Lecture :} aucune variable ne domine --- les
-    corrélations sont \textbf{modérées} ---, ce qui motive notre travail de combinaison
-    (section~\ref{sec:features}). Du côté « stress » ressortent \texttt{DAILY\_SHOUTING}
-    et \texttt{LOST\_VACATION} ; du côté « apaisement », \texttt{WEEKLY\_MEDITATION},
-    \texttt{SLEEP\_HOURS} et \texttt{SUFFICIENT\_INCOME}.}
-  \label{fig:corr}
+  \includegraphics[width=0.62\linewidth]{01_heatmap_correlations.png}
+  \caption{Heatmap des corrélations (variables numériques). La cylindrée
+    \texttt{engineSize} (\priceUp{$+0{,}63$}) et l'année \texttt{year} (\priceUp{$+0{,}52$}) sont
+    les plus liées au prix ; le kilométrage (\priceDn{$-0{,}43$}) et l'âge (\priceDn{$-0{,}52$}) le
+    tirent vers le bas.}
+  \label{fig:heat}
 \end{figure}
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.70\linewidth]{02_coefficients_base.png}
-  \caption{Coefficients du modèle (variables standardisées) : poids et signe de chaque
-    variable dans la régression. \textit{Lecture :} répond visuellement à la question
-    business --- qui fait \hot{monter} ou \cool{baisser} le stress.}
-  \label{fig:coefbase}
+  \includegraphics[width=0.78\linewidth]{02_prix_par_categorie.png}
+  \caption{Prix par catégorie. Une \textbf{Semi-Auto} (23\,483~£) ou \textbf{Automatique}
+    (21\,315~£) se vend bien plus cher qu'une \textbf{Manuelle} (12\,520~£) ; côté
+    carburant, \textbf{Hybride} (19\,048~£) et \textbf{Diesel} (18\,869~£) devancent
+    l'\textbf{Essence} (14\,712~£).}
+  \label{fig:cat}
 \end{figure}
 
-\noindent\textit{(Choix : des diagrammes en barres triés plutôt qu'un camembert ou un
-nuage surchargé, car l'œil compare mieux des longueurs que des angles --- principe vu
-en cours.)}
+\noindent\textit{(Choix : heatmap + boîtes à moustaches plutôt qu'un camembert, car
+l'œil compare mieux des positions et des longueurs que des angles --- principe vu en
+cours.)}
 
 % =============================================================================
-\section{Handcrafted features}\label{sec:features}
+\section{Handcrafted features}
 % =============================================================================
 
-Le constat de la section précédente --- aucune variable seule n'est fortement corrélée
-au stress --- nous a conduits à \textbf{construire 4 nouvelles variables} combinant les
-variables brutes selon des hypothèses de bon sens :
+Plutôt que d'utiliser l'année brute, nous avons \textbf{construit 2 nouvelles variables}
+plus parlantes :
 
 \begin{enumerate}[leftmargin=1.6em]
-  \item \texttt{SOCIAL\_SUPPORT} $=$ \texttt{CORE\_CIRCLE} $+$ \texttt{SOCIAL\_NETWORK}
-    $+$ \texttt{SUPPORTING\_OTHERS}. \textit{Hypothèse :} le soutien social amortit le
-    stress (Cohen \& Wills, 1985).
-  \item \texttt{HEALTHY\_HABITS} $=$ \texttt{SLEEP\_HOURS} $+$ \texttt{DAILY\_STEPS}
-    $+$ \texttt{WEEKLY\_MEDITATION} $+$ \texttt{FRUITS\_VEGGIES}. \textit{Hypothèse :}
-    une même hygiène de vie, dont les comportements se cumulent.
-  \item \texttt{OVERWORK} $=$ \texttt{LOST\_VACATION} $+$ \texttt{DAILY\_SHOUTING}
-    $-$ \texttt{TIME\_FOR\_PASSION}. \textit{Hypothèse :} proxy de surmenage (beaucoup
-    de congés non pris et d'irritabilité, peu de temps pour soi).
-  \item \texttt{SLEEP\_x\_FLOW} $=$ \texttt{SLEEP\_HOURS} $\times$ \texttt{FLOW}.
-    \textit{Hypothèse :} une \textbf{interaction} (produit, comme
-    \texttt{Pclass}\,$\times$\,\texttt{Age} du cours) : bien dormir \textbf{et} être
-    souvent absorbé a un effet protecteur \textbf{combiné}.
+  \item \texttt{car\_age} $=$ $2026 -$ \texttt{year}. \textit{Hypothèse :} l'âge est un
+    proxy d'usure ; une voiture plus vieille vaut moins cher. \textbf{Corrélation avec le
+    prix : $-0{,}52$} (le signal négatif le plus fort).
+  \item \texttt{mileage\_per\_year} $=$ \texttt{mileage} $/$ (\texttt{car\_age} $+ 1$).
+    \textit{Hypothèse :} le kilométrage \textbf{par an} distingue une vieille voiture peu
+    roulée d'une récente très roulée. \textbf{Corrélation avec le prix : $-0{,}40$.}
+    \textit{(Le « $+1$ » évite une division par zéro pour les voitures de l'année.)}
 \end{enumerate}
 
-\noindent\textbf{Vérification de la pertinence (corrélation avec le stress) :}
-\begin{center}
-\begin{tabular}{@{}lcl@{}}
-  \toprule
-  \textbf{Feature maison} & \textbf{Corrélation} & \textbf{Verdict} \\
-  \midrule
-  \texttt{OVERWORK}       & $\hot{+0{,}349}$  & \cmark\ le \textbf{signal le plus fort de toute l'étude} \\
-  \texttt{HEALTHY\_HABITS}& $\cool{-0{,}218}$& \cmark\ pertinent (habitudes saines $\to$ moins de stress) \\
-  \texttt{SLEEP\_x\_FLOW} & $\cool{-0{,}157}$& \cmark\ pertinent (l'interaction fonctionne) \\
-  \texttt{SOCIAL\_SUPPORT}& $\cool{-0{,}055}$& \xmark\ quasi nul --- \textbf{échec instructif} \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\medskip
-\textbf{Trois indices sur quatre sont très pertinents} --- \texttt{OVERWORK} dépasse
-même toutes les variables brutes. Mais \texttt{SOCIAL\_SUPPORT} \textbf{échoue}, et ce
-résultat est le plus riche d'enseignement. En inspectant ses composantes
-(Figure~\ref{fig:coefbase}), on voit qu'elles se \textbf{contredisent} : un grand
-réseau social (\texttt{SOCIAL\_NETWORK}, coef.\ $\hot{+0{,}09}$) et le fait d'aider
-beaucoup les autres (\texttt{SUPPORTING\_OTHERS}, $\hot{+0{,}07}$) vont de pair avec
-\textbf{plus} de stress --- sans doute parce que les personnes très sollicitées
-socialement sont aussi plus occupées/stressées. En les additionnant avec l'entourage
-proche, les effets s'annulent. \textbf{Leçon :} une feature combinée n'est utile que si
-ses composantes pointent dans le même sens --- la vérification de pertinence sert
-précisément à le détecter.
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.62\linewidth]{03_coefficients_indices.png}
-  \caption{Poids des 4 indices maison (coefficients standardisés).}
-  \label{fig:coefind}
-\end{figure}
+Ces deux indices, simples et de bon sens, capturent l'essentiel de l'effet « temps » sur
+le prix et nourrissent directement la régression.
 
 % =============================================================================
 \section{Linear / logistic / softmax regression}
 % =============================================================================
 
-\noindent\textbf{Choix : la régression linéaire.} La cible (\texttt{DAILY\_STRESS},
-0-5) est numérique et ordonnée ; nous la traitons comme \textbf{continue}. Surtout,
-notre objectif est l'\textbf{explication} (comprendre les leviers) plus que la
-prédiction parfaite : les coefficients d'une régression linéaire s'\textbf{interprètent
-directement}.
+\noindent\textbf{Choix : la régression linéaire.} La cible (\texttt{price}) est une
+grandeur \textbf{numérique continue} : la régression linéaire est le modèle naturel, et
+ses coefficients s'\textbf{interprètent directement} (en £).
 
 \medskip
-\noindent\textbf{Méthode.} $\text{stress} \approx \beta_0 + \beta_1 x_1 + \dots +
-\beta_k x_k$, coefficients estimés par \textbf{moindres carrés} (solution des équations
-normales $\hat{\beta} = (A^\top A)^{-1} A^\top y$, vue en cours).
-
-\medskip
-\noindent\textbf{Protocole (validation).} Découpage \textbf{train/test 80-20} ;
-\textbf{standardisation} apprise sur le train ; \textbf{validation croisée 5-fold} pour
-une estimation robuste.
+\noindent\textbf{Méthode.} On prédit \texttt{price} à partir de 5 variables :
+\texttt{car\_age}, \texttt{mileage\_per\_year}, \texttt{engineSize},
+\texttt{transmission} et \texttt{model} (ces deux dernières encodées en nombres avec un
+\texttt{LabelEncoder}). Découpage \textbf{train/test 80-20} (\texttt{random\_state=42}).
 
 \medskip
 \noindent\textbf{Résultats.}
 \begin{itemize}[nosep,leftmargin=1.4em]
-  \item $R^2$ (modèle à 23 variables, test) $=$ \textbf{0,187}
-  \item $R^2$ (modèle à 4 indices maison, test) $=$ \textbf{0,125} ; en
-    \textbf{5-fold $=$ 0,143 $\pm$ 0,013}
-  \item \hot{\textbf{Font monter}} le stress : \texttt{DAILY\_SHOUTING}
-    ($\hot{+0{,}32}$), \texttt{LOST\_VACATION} ($\hot{+0{,}18}$), \texttt{SOCIAL\_NETWORK}
-    ($+0{,}09$), \texttt{PERSONAL\_AWARDS} ($+0{,}06$).
-  \item \cool{\textbf{Font baisser}} le stress : \texttt{WEEKLY\_MEDITATION}
-    ($\cool{-0{,}15}$), \texttt{GENDER\_Male} ($-0{,}15$), \texttt{SLEEP\_HOURS}
-    ($-0{,}13$), \texttt{SUFFICIENT\_INCOME} ($-0{,}12$), \texttt{TIME\_FOR\_PASSION}
-    ($-0{,}09$).
+  \item \textbf{$R^2$ (test) $=$ 0,735} ; $R^2$ (train) $=$ 0,725 $\to$ écart très
+    faible, \textbf{pas de surapprentissage}.
+  \item \textbf{RMSE (test) $=$ 4\,827~£} : l'erreur type de prédiction est d'environ
+    4\,800~£.
+  \item \textbf{Coefficients} (effet sur le prix) : \texttt{engineSize}
+    \priceUp{$+10\,862$~£} par litre de cylindrée (le levier le plus fort) ; \texttt{car\_age}
+    \priceDn{$-1\,695$~£} par année d'âge ; \texttt{transmission} $+480$~£ ; \texttt{model}
+    $+11{,}5$~£ ; \texttt{mileage\_per\_year} $-1{,}33$~£.
 \end{itemize}
 
-\medskip
-\noindent\textbf{Interprétation.} Le mode de vie explique environ \textbf{15 à 19\,\%
-de la variance} du stress. Le facteur le plus fort, \texttt{DAILY\_SHOUTING}, est à
-manier avec prudence : crier/bouder est en partie un \textbf{symptôme} du stress, pas
-seulement une cause (relation quasi-circulaire). Le facteur aggravant le plus
-\textbf{actionnable} est \texttt{LOST\_VACATION} (ne pas prendre ses congés). À
-l'inverse, \textbf{méditer, dormir, avoir un revenu suffisant et du temps pour ses
-passions} sont associés à moins de stress. On note aussi que les hommes déclarent un
-stress un peu plus faible (\texttt{GENDER\_Male} $-0{,}15$).
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.55\linewidth]{03_actual_vs_predicted.png}
+  \caption{Prix réel vs prédit (jeu de test). Les points suivent globalement la diagonale
+    (prédiction parfaite). Le modèle se disperse davantage sur les voitures les plus
+    chères (la variance du prix augmente avec sa valeur) : une limite connue de la
+    régression linéaire sur des prix bruts.}
+  \label{fig:pred}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.6\linewidth]{04_coefficients.png}
+  \caption{Coefficients de la régression. La \textbf{cylindrée} fait monter le prix,
+    l'\textbf{âge} le fait baisser.}
+  \label{fig:coef}
+\end{figure}
 
 \medskip
-\noindent\textbf{Fiabilité.} Le $R^2$ est \textbf{modéré}, ce qui est \textbf{attendu
-et honnête} : le stress est multifactoriel et auto-déclaré. La \textbf{stabilité} du
-5-fold (écart-type 0,013) indique un modèle \textbf{non sur-appris}. Le modèle à 4
-indices est un peu moins performant que le modèle complet (0,13 vs 0,19) : c'est le
-\textbf{compromis} interprétabilité / performance --- on conserve environ \textbf{deux
-tiers} du pouvoir explicatif avec \textbf{5 fois moins} de variables. Nous avons enfin
-\textbf{écarté} \texttt{WORK\_LIFE\_BALANCE\_SCORE} (somme des autres colonnes) pour
-éviter un $R^2$ artificiellement parfait (fuite d'information).
+\noindent\textbf{Bug corrigé.} La première version du code \textbf{importait}
+\texttt{r2\_score} et \texttt{mean\_squared\_error} \textbf{sans jamais s'en servir} : la
+régression ne mesurait donc ni sa qualité ni son erreur. Nous avons ajouté cette
+\textbf{évaluation} ($R^2$ + RMSE), qui est le cœur d'un projet de régression. Nous avons
+aussi remplacé un \textbf{chemin de fichier codé en dur} par un chemin relatif (le code
+tournait seulement sur le PC d'origine).
 
 % =============================================================================
 \section{Conclusion}
 % =============================================================================
 
-\noindent\textbf{Bénéfices.} L'analyse montre qu'une part du stress quotidien
-\textbf{s'explique par le mode de vie} et désigne des \textbf{leviers concrets} :
-prendre ses congés, méditer, dormir, se garder du temps pour ses passions. Notre
-feature \texttt{OVERWORK} (surmenage) s'est révélée le \textbf{meilleur prédicteur} de
-toute l'étude (corrélation $+0{,}35$).
+\noindent\textbf{Bénéfices.} Un modèle \textbf{simple et interprétable} explique déjà
+\textbf{$\sim$74~\%} de la variance du prix d'une voiture d'occasion. Les leviers sont
+clairs : une \textbf{grosse cylindrée} et une \textbf{boîte automatique} font monter le
+prix ; l'\textbf{âge} et le \textbf{kilométrage} le font baisser. Nos deux features
+maison (\texttt{car\_age}, \texttt{mileage\_per\_year}) portent l'essentiel du signal
+temporel.
 
 \medskip
-\noindent\textbf{L'enseignement le plus précieux} est venu d'un \textbf{échec} : la
-feature \texttt{SOCIAL\_SUPPORT}, pourtant fondée sur la littérature, n'explique rien
-ici --- parce que ses composantes se contredisent dans ces données. Cela rappelle qu'une
-hypothèse doit toujours être \textbf{vérifiée empiriquement}.
+\noindent\textbf{L'enseignement le plus précieux} est venu d'un \textbf{échec} : notre
+premier dataset, sur la santé mentale, n'avait aucune corrélation ($\approx 0$) car il
+était \textbf{fabriqué}. Des données réelles racontent une histoire ; des données
+synthétiques, non.
 
 \medskip
-\noindent\textbf{Limites :} données \textbf{auto-déclarées} (biais de perception),
-cible grossière 0-5, et surtout \textbf{corrélation $\neq$ causalité}.
+\noindent\textbf{Limites :} (i) \texttt{model} et \texttt{transmission} sont encodées en
+nombres, ce qui impose un \textbf{faux ordre} ; (ii) le prix brut rend l'erreur plus
+grande sur les voitures chères (Figure~\ref{fig:pred}) ; (iii) marque et carburant ne
+sont pas (encore) dans le modèle.
 
 \medskip
-\noindent\textbf{Améliorations :} (i) une \textbf{régression ordinale/logistique}
-adaptée à l'échelle 0-5 ; (ii) revoir \texttt{SOCIAL\_SUPPORT} en séparant entourage
-proche et réseau étendu ; (iii) \textbf{segmenter par âge/genre} ; (iv) des données
-longitudinales pour approcher la causalité.
-
-\medskip
-\noindent\textbf{La vraie leçon du projet :} des données \textit{réelles} racontent une
-histoire --- y compris quand elles contredisent nos hypothèses ; des données
-\textit{fabriquées}, non. Savoir faire la différence est la première compétence du data
-scientist.
+\noindent\textbf{Améliorations :} (i) \textbf{one-hot encoding} des catégories ; (ii)
+modéliser \textbf{$\log(\text{prix})$} pour stabiliser la variance ; (iii) ajouter
+\texttt{Make}, \texttt{fuelType}, \texttt{tax}, \texttt{mpg} ; (iv) tester une régression
+régularisée (Ridge/Lasso).
 
 % =============================================================================
 \section{List of references}
 % =============================================================================
 
 \begin{enumerate}[leftmargin=1.6em]
-  \item \textbf{Dataset.} \textit{Lifestyle and Wellbeing Data}, Kaggle
-    (\textit{ydalat}). \url{https://www.kaggle.com/ydalat/lifestyle-and-wellbeing-data}
-    --- enquête « How's Life? The Work-Life Balance survey », www.authentic-happiness.com.
+  \item \textbf{Dataset.} \textit{100,000 UK Used Car Data set} (7 marques fusionnées),
+    Kaggle. EDA : \url{https://www.kaggle.com/code/harishkumardatalab/eda-of-multibrand-used-car-dataset}
+    --- CSV utilisé (miroir) : \url{https://github.com/Ajinkya017/Car_Dataset}
   \item \textbf{Cours.} L.\ Fillatre, \textit{Introduction to Data Processing},
     Université Côte d'Azur, Polytech Nice Sophia, 2025-2026 (Lectures 1 à 4).
   \item \textbf{scikit-learn.} Pedregosa et al., \textit{Scikit-learn: Machine Learning
     in Python}, JMLR 12, 2011. \url{https://scikit-learn.org/stable/modules/linear_model.html}
   \item \textbf{pandas.} McKinney, \textit{Data Structures for Statistical Computing in
     Python}, 2010.
-  \item \textbf{Visualisation.} C.\ O.\ Wilke, \textit{Fundamentals of Data
-    Visualization}, O'Reilly, 2019. \url{https://clauswilke.com/dataviz/}
-  \item \textbf{Soutien social \& stress.} S.\ Cohen \& T.\ A.\ Wills, « Stress, social
-    support, and the buffering hypothesis », \textit{Psychological Bulletin}, 98(2),
-    1985, p.\ 310-357.
+  \item \textbf{seaborn.} Waskom, \textit{seaborn: statistical data visualization}, JOSS,
+    2021. \url{https://seaborn.pydata.org}
 \end{enumerate}
 
 \end{document}

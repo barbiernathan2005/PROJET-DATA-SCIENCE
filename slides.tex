@@ -1,11 +1,10 @@
 % =============================================================================
-%  Slides (oral 5 min) — « Le stress se lit-il dans notre mode de vie ? »
+%  Slides (oral 5 min) — « Combien vaut une voiture d'occasion ? »
 %  Introduction to Data Processing — MAM3, Université Côte d'Azur, 2025-2026
 %  Équipe : Hafssa, Thibaud, Nathan
 %
 %  Thème : metropolis (moderne, épuré).
-%  Compilation : pdflatex (Overleaf par défaut) fonctionne ; pour le rendu
-%  Fira Sans d'origine, compiler avec XeLaTeX ou LuaLaTeX.
+%  Compilation : pdflatex (Overleaf par défaut) ; XeLaTeX/LuaLaTeX pour le vrai Fira.
 %  Le script oral est dans les \note{} (afficher avec \setbeameroption{show notes}).
 % =============================================================================
 \documentclass[aspectratio=169,11pt]{beamer}
@@ -26,13 +25,13 @@
 
 \graphicspath{{figures/}}
 
-% Couleurs cohérentes avec les figures : rouge = ↑ stress, bleu = ↓ stress
-\definecolor{stressup}{HTML}{D1495B}
-\definecolor{stressdown}{HTML}{3A6EA5}
-\newcommand{\hot}[1]{\textcolor{stressup}{#1}}
-\newcommand{\cool}[1]{\textcolor{stressdown}{#1}}
+% Couleurs : vert = fait MONTER le prix, rouge = fait BAISSER le prix.
+\definecolor{priceup}{HTML}{2E7D32}
+\definecolor{pricedown}{HTML}{C62828}
+\newcommand{\priceUp}[1]{\textcolor{priceup}{#1}}
+\newcommand{\priceDn}[1]{\textcolor{pricedown}{#1}}
 
-\title{Le stress se lit-il dans notre mode de vie ?}
+\title{Combien vaut une voiture d'occasion ?}
 \subtitle{Introduction to Data Processing --- MAM3, 2025-2026}
 \author{Hafssa \quad\textbullet\quad Thibaud \quad\textbullet\quad Nathan}
 \institute{Université Côte d'Azur --- Polytech Nice Sophia}
@@ -43,18 +42,18 @@
 \maketitle
 
 % ------------------------------------------------------------------ SLIDE 1 --
-\begin{frame}{Et si notre mode de vie trahissait notre stress ?}
+\begin{frame}{Combien vaut votre voiture d'occasion ?}
   \begin{columns}[T]
     \begin{column}{0.58\textwidth}
       \begin{itemize}
-        \item Notre question : \alert{quels facteurs du quotidien expliquent le
-          stress ?}
-        \item 1\textsuperscript{er} essai : un dataset « santé mentale » (2\,500
-          lignes) qui ne disait \textbf{rien} ($|r|$ max $\approx 0{,}04$
-          $\Rightarrow$ \textbf{synthétique}).
-        \item Notre choix : une \textbf{vraie enquête} bien-être ---
-          \textbf{15\,971 personnes} (Authentic-Happiness).
-        \item Utile : applis bien-être, prévention santé, qualité de vie au travail.
+        \item Notre question : \alert{peut-on prédire le prix d'une voiture d'occasion ?}
+        \item 1\textsuperscript{er} essai : un dataset « santé mentale » (2\,500 lignes)
+          qui ne disait \textbf{rien} ($|r|$ max $\approx 0{,}04$ $\Rightarrow$
+          \textbf{synthétique}).
+        \item Notre choix : un \textbf{vrai dataset} --- \textbf{72\,000 voitures}
+          d'occasion (UK, 7 marques).
+        \item Utile : estimer un prix juste, repérer les bonnes affaires, sites
+          d'annonces.
       \end{itemize}
     \end{column}
     \begin{column}{0.42\textwidth}
@@ -63,143 +62,133 @@
       {\scriptsize Dataset synthétique : corrélations $\approx 0$.}
     \end{column}
   \end{columns}
-  \note{On voulait comprendre ce qui stresse les gens. Premier piège : un dataset
-    « santé mentale » parfait en apparence, mais aucune variable n'en expliquait une
-    autre --- des données générées artificiellement. Pire, tout le thème en est rempli.
-    On a donc pris une vraie enquête sur près de 16 000 personnes, pour répondre à :
-    qu'est-ce qui fait monter notre stress ?}
+  \note{On voulait prédire quelque chose d'utile. Premier piège : un dataset « santé
+    mentale » parfait en apparence, mais aucune variable n'en expliquait une autre ---
+    des données générées artificiellement. On a donc changé pour un vrai dataset :
+    72 000 annonces de voitures d'occasion, pour répondre à : combien vaut une voiture ?}
 \end{frame}
 
 % ------------------------------------------------------------------ SLIDE 2 --
-\begin{frame}{15\,971 vies, 23 variables, un seul chiffre à expliquer}
+\begin{frame}{72\,000 voitures, 10 variables, un prix à prédire}
   \begin{columns}[T]
-    \begin{column}{0.58\textwidth}
+    \begin{column}{0.56\textwidth}
       \begin{itemize}
-        \item Source \textbf{réelle} Authentic-Happiness $\cdot$ \textbf{15\,971
-          lignes} $\cdot$ \textbf{23 variables}.
-        \item Cible : \texttt{DAILY\_STRESS}, score \textbf{0 $\to$ 5}.
-        \item $\sim$20 variables numériques (sommeil, vie sociale, méditation, congés
-          non pris\dots) $+$ 2 catégorielles (Âge, Genre).
-        \item Nettoyage : 1 valeur cassée corrigée, \textbf{one-hot} Âge/Genre,
-          \textbf{standardisation}.
+        \item Source \textbf{réelle} UK Used Cars $\cdot$ \textbf{72\,435 lignes}
+          $\cdot$ \textbf{10 variables}.
+        \item Cible : \texttt{price}, le prix en \textbf{livres £}.
+        \item Numériques : année, kilométrage, taxe, conso, \textbf{cylindrée} ;
+          catégorielles : modèle, boîte, carburant, marque.
+        \item Nettoyage : années aberrantes (\textbf{2060}, \textbf{1970}) $+$ doublons
+          $\to$ \textbf{71\,593 lignes}.
       \end{itemize}
     \end{column}
-    \begin{column}{0.42\textwidth}
+    \begin{column}{0.44\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{01_correlations.png}
+      \includegraphics[width=\linewidth]{01_heatmap_correlations.png}
     \end{column}
   \end{columns}
-  \note{Données réelles et auto-déclarées : chacun a rempli un questionnaire. On
-    explique une seule chose, le stress de 0 à 5. Comme toute vraie donnée, elle est
-    imparfaite : une valeur à corriger, des catégories à encoder, des échelles à
-    harmoniser. Premier constat : aucune variable seule ne ressort vraiment.}
+  \note{Données réelles : de vraies annonces. On veut prédire le prix. Comme toute vraie
+    donnée, elle est imparfaite : une voiture datée de 2060, une de 1970, et des doublons
+    --- qu'on a nettoyés. Premier constat sur la heatmap : la cylindrée et l'année
+    ressortent.}
 \end{frame}
 
 % ------------------------------------------------------------------ SLIDE 3 --
-\begin{frame}{4 indices maison --- dont un qui nous a surpris}
+\begin{frame}{2 indices maison à partir de l'année}
   \begin{columns}[T]
-    \begin{column}{0.6\textwidth}
-      \footnotesize
+    \begin{column}{0.58\textwidth}
       \begin{tabular}{@{}lc@{}}
         \toprule
-        \textbf{Feature maison} & \textbf{Corr.\ stress} \\
+        \textbf{Feature maison} & \textbf{Corr.\ prix} \\
         \midrule
-        \textbf{OVERWORK} \scriptsize(congés + irritab.\ $-$ passions) & \hot{$+0{,}35$} \\
-        \textbf{HEALTHY\_HABITS} \scriptsize(sommeil+activité+médit.) & \cool{$-0{,}22$} \\
-        \textbf{SLEEP $\times$ FLOW} \scriptsize(sommeil $\times$ immersion) & \cool{$-0{,}16$} \\
-        \textbf{SOCIAL\_SUPPORT} \scriptsize(entourage+réseau+entraide) & \cool{$-0{,}06$} \\
+        \texttt{car\_age} \scriptsize($2026-$année) & \priceDn{$-0{,}52$} \\
+        \texttt{mileage\_per\_year} \scriptsize(km $/$ âge) & \priceDn{$-0{,}40$} \\
         \bottomrule
       \end{tabular}
       \medskip
       \begin{itemize}
-        \item 3 marchent --- surtout \hot{\textbf{OVERWORK}}, meilleur signal de
-          l'étude.
-        \item \textbf{Pourquoi l'échec ?} réseau (\hot{$+0{,}09$}) et entraide
-          (\hot{$+0{,}07$}) vont avec \textbf{plus} de stress $\Rightarrow$ ils annulent
-          l'effet de l'entourage proche.
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.4\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{03_coefficients_indices.png}
-    \end{column}
-  \end{columns}
-  \note{Le vrai travail est ici : on combine les variables en 4 indices. Trois
-    marchent très bien --- surtout OVERWORK, le surmenage, meilleur signal de toute
-    l'étude (+0.35). Mais le quatrième, le soutien social, échoue (-0.06) ! En
-    creusant : avoir un grand réseau et beaucoup aider les autres vont avec plus de
-    stress, ce qui annule l'effet des proches. Leçon : une feature combinée ne vaut que
-    si ses composantes vont dans le même sens --- et c'est la vérification qui permet de
-    le voir.}
-\end{frame}
-
-% ------------------------------------------------------------------ SLIDE 4 --
-\begin{frame}{Le stress se lit dans nos habitudes --- à 19\,\%}
-  \begin{columns}[T]
-    \begin{column}{0.58\textwidth}
-      \begin{itemize}
-        \item Régression \textbf{linéaire}, split \textbf{80-20} $+$ \textbf{5-fold}.
-        \item $R^2$ (23 var) $=$ \textbf{0,19} $\cdot$ $R^2$ (4 indices) $=$
-          \textbf{0,13} $\cdot$ 5-fold $=$ \textbf{0,14 $\pm$ 0,01} (stable).
-        \item \hot{\textbf{Montent}} : irritabilité \hot{$+0{,}32$}, congés non pris
-          \hot{$+0{,}18$}.
-        \item \cool{\textbf{Baissent}} : méditation \cool{$-0{,}15$}, sommeil
-          \cool{$-0{,}13$}, revenu suffisant \cool{$-0{,}12$}, temps passions
-          \cool{$-0{,}09$}.
+        \item \texttt{car\_age} : plus une voiture est vieille, moins elle vaut.
+        \item \texttt{mileage\_per\_year} : distingue une \textbf{vieille voiture peu
+          roulée} d'une \textbf{récente très roulée}.
       \end{itemize}
     \end{column}
     \begin{column}{0.42\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{02_coefficients_base.png}
+      \includegraphics[width=\linewidth]{04_coefficients.png}
     \end{column}
   \end{columns}
-  \note{Le mode de vie explique environ 19 \% du stress --- modeste mais réel : le
-    stress est multifactoriel, c'est honnête. Le facteur le plus fort, l'irritabilité,
-    est en partie un symptôme du stress (prudence). Le plus actionnable : ne pas prendre
-    ses congés. À l'inverse, méditer, dormir, un revenu suffisant et du temps pour soi
-    apaisent. Et la validation 5-fold est très stable : pas de surapprentissage.}
+  \note{Plutôt que l'année brute, on construit deux indices plus parlants. car\_age,
+    l'âge, est notre signal négatif le plus fort (-0.52). Et le kilométrage par an :
+    100 000 km, ça n'a pas le même sens sur une voiture de 2 ans ou de 10 ans. Ces deux
+    indices simples portent l'effet du temps sur le prix.}
+\end{frame}
+
+% ------------------------------------------------------------------ SLIDE 4 --
+\begin{frame}{On prédit le prix à 74\,\% --- et on corrige un vrai bug}
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+      \begin{itemize}
+        \item Régression \textbf{linéaire}, 5 variables, split \textbf{80-20}.
+        \item \textbf{$R^2$ (test) $=$ 0,735} $\cdot$ $R^2$ (train) $=$ 0,725 (pas de
+          surapprentissage) $\cdot$ \textbf{RMSE $\approx$ 4\,800~£}.
+        \item \priceUp{\textbf{Monte}} le prix : cylindrée \priceUp{$+10\,862$~£/L},
+          boîte $+480$~£.
+        \item \priceDn{\textbf{Baisse}} le prix : \priceDn{âge $-1\,695$~£/an},
+          km/an $-1{,}3$~£.
+        \item \textbf{Bug corrigé} : le code importait $R^2$/RMSE mais ne les
+          \textbf{calculait jamais}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{03_actual_vs_predicted.png}
+    \end{column}
+  \end{columns}
+  \note{Le modèle explique 74 \% du prix --- et train proche de test, donc pas de
+    surapprentissage. En moyenne on se trompe de ~4 800 £. Le levier le plus fort, c'est
+    la cylindrée ; à l'inverse, chaque année d'âge coûte ~1 700 £. Surtout : le code de
+    départ importait le R² et l'erreur mais ne les affichait jamais --- une régression
+    qui ne se mesure pas ! On a corrigé ça.}
 \end{frame}
 
 % ------------------------------------------------------------------ SLIDE 5 --
-\begin{frame}{Des données réelles racontent une histoire --- même quand elles nous
-    contredisent}
+\begin{frame}{Des données réelles racontent une histoire --- pas des données fabriquées}
   \begin{itemize}
-    \item Leviers \textbf{actionnables} : congés, méditation, sommeil, temps pour ses
-      passions.
-    \item Notre feature \hot{\textbf{OVERWORK}} $=$ meilleur prédicteur ($+0{,}35$).
-    \item Un \textbf{échec} riche : \texttt{SOCIAL\_SUPPORT} rappelle qu'une hypothèse
-      se \textbf{vérifie} (corrélation $\neq$ intuition).
-    \item Limites : auto-déclaré, échelle 0-5, \textbf{corrélation $\neq$ causalité}.
-    \item Pistes : régression ordinale, revoir le soutien social, segmenter par âge.
+    \item Un modèle \textbf{simple} explique déjà \textbf{$\sim$74~\%} du prix ; leviers
+      clairs (cylindrée $\uparrow$, âge $\downarrow$).
+    \item Nos features \texttt{car\_age} / \texttt{mileage\_per\_year} portent l'effet du
+      temps.
+    \item Leçon : notre 1\textsuperscript{er} dataset (santé mentale) n'expliquait rien
+      car \textbf{synthétique} (corrélations $\approx 0$).
+    \item Limites : catégories encodées en nombres (faux ordre), prix brut, marque/
+      carburant non utilisés.
+    \item Pistes : one-hot, modéliser \textbf{$\log(\text{prix})$}, ajouter marque \&
+      carburant, Ridge/Lasso.
   \end{itemize}
-  \note{On a identifié des leviers concrets, et notre indice de surmenage est le
-    meilleur prédicteur. Mais notre plus belle leçon vient d'un échec : le soutien
-    social, pourtant attendu protecteur, n'explique rien ici --- il a fallu l'accepter
-    et le comprendre. C'est ça, travailler de vraies données : elles racontent une
-    histoire, même quand elle contredit nos intuitions. Des données fabriquées, elles,
-    ne racontent rien. Merci.}
+  \note{En résumé : un modèle simple, mais qui prédit le prix à 74 \% avec des leviers de
+    bon sens. Notre plus belle leçon vient de l'échec du début : un dataset fabriqué ne
+    raconte rien (corrélations nulles), un dataset réel, si. Savoir faire la différence,
+    c'est la première compétence du data scientist. Merci.}
 \end{frame}
 
 % ------------------------------------------------------------------- Q&A -----
 \begin{frame}{Questions anticipées}
   \footnotesize
   \begin{itemize}
-    \item \textbf{Pourquoi linéaire et pas logistique ?} cible 0-5 continue $+$ on veut
-      \textbf{interpréter} les coefficients ; la logistique $=$ piste d'amélioration.
-    \item \textbf{$R^2$ de 0,19, c'est faible ?} le stress est multifactoriel et
-      auto-déclaré ; un $R^2$ modéré est \textbf{honnête}. On vise l'explication. Le
-      5-fold ($\pm 0{,}01$) montre que c'est \textbf{stable}.
-    \item \textbf{L'irritabilité ($+0{,}32$), n'est-ce pas circulaire ?} en partie :
-      crier/bouder est aussi un \textit{symptôme} du stress. D'où le levier
-      \textbf{actionnable} $=$ congés non pris.
-    \item \textbf{Pourquoi garder une feature qui a échoué ?} pour montrer la
-      \textbf{démarche} : l'échec de \texttt{SOCIAL\_SUPPORT} nous a appris pourquoi
-      (composantes contradictoires).
-    \item \textbf{Données vraiment réelles ?} enquête identifiée $+$ imperfections du
-      réel ; le 1\textsuperscript{er} dataset avait des corrélations $\approx 0$ $=$
-      signature du synthétique.
-    \item \textbf{Circularité du score ?} on a \textbf{retiré}
-      \texttt{WORK\_LIFE\_BALANCE\_SCORE} (somme des colonnes $\to$ $R^2=1$ trompeur).
+    \item \textbf{Pourquoi linéaire ?} la cible (prix) est \textbf{continue} et on veut
+      \textbf{interpréter} les coefficients (en £).
+    \item \textbf{$R^2$ de 0,74, c'est bon ?} honnête pour un modèle simple ; et
+      \textbf{train $\approx$ test} $\to$ pas de surapprentissage.
+    \item \textbf{Pourquoi encoder \texttt{model} en nombre ?} solution \textbf{simple}
+      pour un premier modèle ; limite assumée (faux ordre) $\to$ piste $=$ one-hot.
+    \item \textbf{Dispersion sur les voitures chères ?} la variance du prix augmente avec
+      sa valeur ; piste $=$ modéliser \textbf{$\log(\text{prix})$}.
+    \item \textbf{Le vrai bug du code ?} il \textbf{importait} \texttt{r2\_score} /
+      \texttt{mean\_squared\_error} mais ne les utilisait jamais $\to$ la régression ne
+      s'évaluait pas. Corrigé.
+    \item \textbf{Données vraiment réelles ?} vraies annonces UK ; imperfections du réel
+      (année 2060, doublons). Le 1\textsuperscript{er} dataset avait des corrélations
+      $\approx 0$ $=$ signature du synthétique.
   \end{itemize}
 \end{frame}
 

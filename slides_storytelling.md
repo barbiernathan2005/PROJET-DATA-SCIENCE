@@ -1,90 +1,90 @@
-# 🎤 Oral (5 min) — « Le stress se lit-il dans notre mode de vie ? »
+# 🎤 Oral (5 min) — « Combien vaut une voiture d'occasion ? »
 ### Squelette des 5 slides + script + Q&A (CHIFFRES RÉELS intégrés)
 
-> Minutage : S1≈45 s · S2≈55 s · S3≈80 s · S4≈80 s · S5≈40 s ≈ **5 min**.
+> Minutage : S1≈45 s · S2≈55 s · S3≈70 s · S4≈90 s · S5≈40 s ≈ **5 min**.
 
 ---
 
 ## SLIDE 1 — Business goal  *(titre « question »)*
-### Titre : « Et si notre mode de vie trahissait notre stress ? »
+### Titre : « Combien vaut votre voiture d'occasion ? »
 
 **Sur la slide :**
-- 🎯 Notre question : *quels facteurs du quotidien expliquent le **stress** ?*
+- 🎯 Notre question : *peut-on **prédire le prix** d'une voiture d'occasion ?*
 - 😕 1er essai : un dataset « santé mentale » (2 500 lignes) qui ne disait **rien** (|r| max ≈ 0.04 → **synthétique**).
-- ✅ Notre choix : une **vraie enquête** bien-être — **15 971 personnes** (Authentic-Happiness).
-- 💡 Utile : applis bien-être, prévention santé, qualité de vie au travail.
+- ✅ Notre choix : un **vrai dataset** — **72 000 voitures** d'occasion au Royaume-Uni (7 marques).
+- 💡 Utile : estimer un prix juste, repérer les bonnes affaires, alimenter les sites d'annonces.
 - 🖼️ *Figure : `figures/00_probleme1_synthetique.png`*
 
-**À dire :** « On voulait comprendre ce qui stresse les gens. Premier piège : un dataset "santé mentale" parfait en apparence, mais aucune variable n'en expliquait une autre — des données **générées artificiellement**. Pire, tout le thème en est rempli. On a donc pris une **vraie enquête** sur près de 16 000 personnes, pour répondre à : *qu'est-ce qui fait monter notre stress ?* »
+**À dire :** « On voulait prédire quelque chose d'utile. Premier piège : un dataset "santé mentale" parfait en apparence, mais **aucune variable n'en expliquait une autre** — des données **générées artificiellement**. On a donc changé pour un **vrai dataset** : 72 000 annonces de voitures d'occasion, pour répondre à : *combien vaut une voiture ?* »
 
 ---
 
 ## SLIDE 2 — Data description  *(titre « descriptif »)*
-### Titre : « 15 971 vies, 23 variables, un seul chiffre à expliquer »
+### Titre : « 72 000 voitures, 10 variables, un prix à prédire »
 
 **Sur la slide :**
-- 📊 Source **réelle** Authentic-Happiness · **15 971 lignes** · **23 variables**.
-- 🎯 Cible : `DAILY_STRESS`, score **0 → 5**.
-- 🔢 ~20 variables numériques (sommeil, vie sociale, méditation, congés non pris…) + 2 catégorielles (Âge, Genre).
-- 🧹 Nettoyage : 1 valeur cassée corrigée, **one-hot** Âge/Genre, **standardisation**.
-- 🖼️ *Figure : `figures/01_correlations.png`*
+- 📊 Source **réelle** UK Used Cars · **72 435 lignes** · **10 variables**.
+- 🎯 Cible : `price`, le prix en **livres £**.
+- 🔢 Numériques : année, kilométrage, taxe, consommation, **cylindrée** + catégorielles : modèle, boîte, carburant, marque.
+- 🧹 Nettoyage : années aberrantes (**2060**, **1970**) + doublons retirés → **71 593 lignes**.
+- 🖼️ *Figure : `figures/01_heatmap_correlations.png`*
 
-**À dire :** « Données **réelles et auto-déclarées** : chacun a rempli un questionnaire. On explique une seule chose, le **stress de 0 à 5**. Comme toute vraie donnée, elle est imparfaite : une valeur à corriger, des catégories à encoder, des échelles à harmoniser. Premier constat sur la heatmap : **aucune variable seule** ne ressort vraiment. »
+**À dire :** « Données **réelles** : de vraies annonces. On veut prédire le **prix**. Comme toute vraie donnée, elle est imparfaite : on a trouvé une voiture datée de **2060**, une de 1970, et des doublons — qu'on a nettoyés. Premier constat sur la heatmap : la **cylindrée** et l'**année** ressortent. »
 
 ---
 
 ## SLIDE 3 — Handcrafted features  *(le cœur du projet)*
-### Titre : « 4 indices maison — dont un qui nous a surpris »
+### Titre : « 2 indices maison à partir de l'année »
 
 **Sur la slide :**
-| Feature maison | Construction | Corrélation au stress |
+| Feature maison | Construction | Corrélation au prix |
 |---|---|---|
-| **OVERWORK** | congés non pris + irritabilité − passions | **+0.35** ✅ (le + fort !) |
-| **HEALTHY_HABITS** | sommeil + activité + méditation + fruits | **−0.22** ✅ |
-| **SLEEP × FLOW** | sommeil **×** immersion *(produit, type « Pclass×Age »)* | **−0.16** ✅ |
-| **SOCIAL_SUPPORT** | entourage + réseau + entraide | **−0.06** ❌ (raté !) |
+| **car_age** | 2026 − année | **−0.52** ✅ (usure) |
+| **mileage_per_year** | kilométrage ÷ (âge + 1) | **−0.40** ✅ |
 
-- 💡 **Pourquoi l'échec ?** réseau (+0.09) et entraide (+0.06) vont avec **plus** de stress → ils annulent l'effet de l'entourage proche.
+- 💡 `car_age` : plus une voiture est vieille, moins elle vaut.
+- 💡 `mileage_per_year` : distingue une **vieille voiture peu roulée** d'une **récente très roulée**.
 
-**À dire :** « Le vrai travail est ici : on combine les variables en 4 indices. Trois marchent très bien — surtout **OVERWORK, le surmenage, meilleur signal de toute l'étude** (+0.35). Mais le quatrième, le **soutien social**, échoue (−0.06) ! En creusant, on comprend : avoir un grand réseau et beaucoup aider les autres vont avec **plus** de stress, ce qui annule l'effet des proches. Leçon : **une feature combinée ne vaut que si ses composantes vont dans le même sens** — et c'est la vérification qui permet de le voir. »
+**À dire :** « Plutôt que l'année brute, on construit deux indices plus parlants. **car_age**, l'âge de la voiture, est notre signal négatif le plus fort (−0.52). Et **le kilométrage par an** : 100 000 km, ça n'a pas le même sens sur une voiture de 2 ans ou de 10 ans. Ces deux indices simples portent l'effet du temps sur le prix. »
 
 ---
 
 ## SLIDE 4 — Regression  *(titre « affirmation »)*
-### Titre : « Le stress se lit dans nos habitudes — à 19 % »
+### Titre : « On prédit le prix à 74 % — et on corrige un vrai bug »
 
 **Sur la slide :**
-- ⚙️ Régression **linéaire**, split **80-20** + **5-fold**.
-- 📈 R² (23 variables) = **0.19** · R² (4 indices) = **0.13** · 5-fold = **0.14 ± 0.01** (stable).
-- 🔴 **Montent** le stress : irritabilité **+0.32**, congés non pris **+0.18**.
-- 🔵 **Baissent** le stress : méditation **−0.15**, sommeil **−0.13**, revenu suffisant **−0.12**, temps passions **−0.09**.
-- 🖼️ *Figure : `figures/02_coefficients_base.png`*
+- ⚙️ Régression **linéaire**, 5 variables, split **80-20**.
+- 📈 **R² (test) = 0.735** · R² (train) = 0.725 (pas de surapprentissage) · **RMSE ≈ 4 800 £**.
+- 🔴 **Monte** le prix : cylindrée **+10 862 £/L**, boîte +480 £.
+- 🔵 **Baisse** le prix : **âge −1 695 £/an**, kilométrage/an −1.3 £.
+- 🐞 **Bug corrigé** : le code **importait** R²/RMSE mais ne les **calculait jamais** → ajout de l'évaluation (+ chemin de fichier relatif).
+- 🖼️ *Figures : `figures/03_actual_vs_predicted.png`, `figures/04_coefficients.png`*
 
-**À dire :** « Le mode de vie explique ~**19 %** du stress — modeste mais réel : le stress est multifactoriel, c'est **honnête**. Le facteur le plus fort, l'irritabilité, est en partie un *symptôme* du stress (prudence). Le plus **actionnable** : ne pas prendre ses congés. À l'inverse, méditer, dormir, un revenu suffisant et du temps pour soi apaisent. Et la validation 5-fold est très stable : pas de surapprentissage. »
+**À dire :** « Le modèle explique **74 %** du prix — et train ≈ test, donc pas de surapprentissage. En moyenne on se trompe de ~4 800 £. Le levier le plus fort, c'est la **cylindrée** ; à l'inverse, chaque **année** d'âge coûte ~1 700 £. Surtout : le code de départ **importait** le R² et l'erreur mais ne les affichait jamais — une régression qui ne se mesure pas ! On a **corrigé** ça. »
 
 ---
 
 ## SLIDE 5 — Conclusion  *(boucle le récit)*
-### Titre : « Des données réelles racontent une histoire — même quand elles nous contredisent »
+### Titre : « Des données réelles racontent une histoire — pas des données fabriquées »
 
 **Sur la slide :**
-- ✅ Leviers **actionnables** : congés, méditation, sommeil, temps pour ses passions.
-- 🏆 Notre feature **OVERWORK** = meilleur prédicteur (+0.35).
-- 💡 Un **échec** riche : `SOCIAL_SUPPORT` rappelle qu'une hypothèse se **vérifie** (corrélation ≠ intuition).
-- ⚠️ Limites : auto-déclaré, échelle 0-5, **corrélation ≠ causalité**.
-- 🚀 Pistes : régression ordinale, revoir le soutien social, segmenter par âge.
+- ✅ Un modèle **simple** explique déjà **~74 %** du prix ; leviers clairs (cylindrée ↑, âge ↓).
+- 🏆 Nos features **car_age** / **mileage_per_year** portent l'effet du temps.
+- 💡 Leçon : notre 1er dataset (santé mentale) n'expliquait rien car **synthétique** (corrélations ≈ 0).
+- ⚠️ Limites : catégories encodées en nombres (faux ordre), prix brut, marque/carburant non utilisés.
+- 🚀 Pistes : one-hot, modéliser **log(prix)**, ajouter marque & carburant, Ridge/Lasso.
 
-**À dire :** « On a identifié des leviers concrets, et notre indice de surmenage est le meilleur prédicteur. Mais notre plus belle leçon vient d'un **échec** : le soutien social, pourtant attendu protecteur, n'explique rien ici — il a fallu l'accepter et le comprendre. C'est ça, travailler de vraies données : elles racontent une histoire, même quand elle contredit nos intuitions. Des données fabriquées, elles, ne racontent rien. Merci. »
+**À dire :** « En résumé : un modèle simple, mais qui prédit le prix à 74 % avec des leviers de bon sens. Notre plus belle leçon vient de l'échec du début : un dataset **fabriqué** ne raconte **rien** (corrélations nulles), un dataset **réel**, si. Savoir faire la différence, c'est la première compétence du data scientist. Merci. »
 
 ---
 
-## 🛡️ Q&A anticipé (les 5 min de questions)
-- **Pourquoi linéaire et pas logistique ?** → cible 0-5 continue + on veut **interpréter** les coefficients ; la logistique = piste d'amélioration.
-- **R² de 0.19, c'est faible, non ?** → le stress est **multifactoriel** et auto-déclaré ; un R² modéré est **honnête**. On vise l'explication, pas la prédiction. La validation 5-fold (±0.01) montre que c'est **stable**.
-- **L'irritabilité (+0.32), n'est-ce pas circulaire ?** → si, en partie : crier/bouder est aussi un *symptôme* du stress. C'est pourquoi on met en avant le levier **actionnable** = congés non pris.
-- **Pourquoi garder une feature qui a échoué ?** → justement pour montrer la **démarche** : on vérifie la pertinence, et l'échec de `SOCIAL_SUPPORT` nous a appris pourquoi (composantes contradictoires).
-- **Données vraiment réelles ?** → enquête identifiée + imperfections du réel ; le 1er dataset avait des corrélations ≈ 0 = signature du synthétique.
-- **Circularité du score ?** → on a **retiré** `WORK_LIFE_BALANCE_SCORE` (somme des colonnes → R²=1 trompeur).
+## 🛡️ Q&A anticipé
+- **Pourquoi linéaire ?** → la cible (prix) est **continue** et on veut **interpréter** les coefficients (en £). Simple et lisible.
+- **R² de 0.74, c'est bon ?** → oui, honnête pour un modèle simple ; et **train ≈ test** → pas de surapprentissage.
+- **Pourquoi encoder `model` en nombre ?** → solution **simple** pour un premier modèle ; limite assumée (faux ordre) → piste = one-hot.
+- **Pourquoi la dispersion sur les voitures chères ?** → la variance du prix augmente avec sa valeur ; piste = modéliser **log(prix)**.
+- **Le vrai bug du code ?** → il **importait** `r2_score`/`mean_squared_error` mais ne les utilisait jamais → la régression ne s'évaluait pas. Corrigé.
+- **Données vraiment réelles ?** → vraies annonces UK ; imperfections du réel (année 2060, doublons). Le 1er dataset, lui, avait des corrélations ≈ 0 = signature du synthétique.
 
 ---
 *Rappel : 5 slides (1 par thème), dépôt **Git** (URL dans le rapport), slides sur Moodle jeudi soir.*
