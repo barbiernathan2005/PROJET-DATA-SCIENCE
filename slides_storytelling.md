@@ -10,9 +10,10 @@
 
 **Sur la slide :**
 - 🎯 Notre question : *quels facteurs du quotidien expliquent le **stress** ?*
-- 😕 1er essai : un dataset « santé mentale » qui ne disait **rien** (corrélations ≈ 0 → **synthétique**).
+- 😕 1er essai : un dataset « santé mentale » (2 500 lignes) qui ne disait **rien** (|r| max ≈ 0.04 → **synthétique**).
 - ✅ Notre choix : une **vraie enquête** bien-être — **15 971 personnes** (Authentic-Happiness).
 - 💡 Utile : applis bien-être, prévention santé, qualité de vie au travail.
+- 🖼️ *Figure : `figures/00_probleme1_synthetique.png`*
 
 **À dire :** « On voulait comprendre ce qui stresse les gens. Premier piège : un dataset "santé mentale" parfait en apparence, mais aucune variable n'en expliquait une autre — des données **générées artificiellement**. Pire, tout le thème en est rempli. On a donc pris une **vraie enquête** sur près de 16 000 personnes, pour répondre à : *qu'est-ce qui fait monter notre stress ?* »
 

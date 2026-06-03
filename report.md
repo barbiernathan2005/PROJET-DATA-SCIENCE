@@ -2,10 +2,11 @@
 ### Rapport — *Introduction to Data Processing* (MAM3, 2025-2026)
 
 **Équipe :** Haffsa, Thibaud, Nathan
-**Dépôt Git :** [URL à compléter — ex. https://github.com/votre-equipe/projet-stress]
+**Dépôt Git :** https://github.com/barbiernathan2005/PROJET-DATA-SCIENCE
 **Dataset :** *Lifestyle & Wellbeing Data* — Kaggle (ydalat), enquête Authentic-Happiness.
 
-> Figures dans le dossier `figures/`. Les `[FIGURE n]` indiquent où insérer les images.
+> Les figures sont générées par `analyse_stress_wellbeing.py` (dossier `figures/`) et
+> intégrées directement ci-dessous.
 
 ---
 
@@ -19,13 +20,24 @@ valeur concrète pour les applications de bien-être, les programmes de prévent
 santé et la qualité de vie au travail : si l'on identifie des leviers actionnables
 (sommeil, congés, méditation…), on peut formuler des recommandations utiles.
 
-Notre parcours a commencé par un **échec instructif**. Notre premier dataset, sur la
-« santé mentale », semblait idéal — mais à l'analyse, **aucune variable n'était
-corrélée à une autre** (corrélations ≈ 0). En enquêtant, nous avons compris que ces
-données étaient **générées artificiellement**, pas mesurées : elles ne pouvaient rien
-nous apprendre. Nous avons aussi constaté que tout le thème « stress / burnout » sur
-Kaggle est saturé de jeux de données synthétiques. Première leçon, devenue notre fil
-rouge : *vérifier la provenance et la réalité des données avant toute analyse.*
+Notre parcours a commencé par un **échec instructif**. Notre premier dataset
+(`Global_Mental_Health_Dataset_2025.csv`, **2 500 lignes**), sur la « santé mentale »,
+semblait idéal pour notre toute première problématique — *peut-on prédire le stress à
+partir du sommeil ?* Mais à l'analyse, **aucune variable n'était corrélée à une
+autre** : la corrélation maximale (hors diagonale) entre toutes les variables
+numériques ne valait que **|r| ≈ 0.04**, et le couple sommeil ↔ stress tombait à
+**−0.02** (Figure 0). En enquêtant, nous avons compris que ces données étaient
+**générées artificiellement**, pas mesurées : elles ne pouvaient rien nous apprendre.
+Nous avons aussi constaté que tout le thème « stress / burnout » sur Kaggle est saturé
+de jeux de données synthétiques. Première leçon, devenue notre fil rouge : *vérifier la
+provenance et la réalité des données avant toute analyse.*
+
+![Dataset synthétique : corrélations ≈ 0](figures/00_probleme1_synthetique.png)
+
+**Figure 0 — le dataset abandonné (synthétique).** *Lecture :* la matrice de
+corrélation est entièrement « éteinte » (toutes les cases ≈ 0). C'est la **signature de
+données fabriquées** : aucune relation exploitable, donc aucune histoire à raconter —
+exactement l'inverse de ce que l'on observera sur les données réelles (Figure 1).
 
 Nous avons alors choisi un jeu de données **réel** : l'enquête *Lifestyle &
 Wellbeing* d'Authentic-Happiness, soit **15 971 réponses authentiques** collectées
@@ -39,16 +51,16 @@ erronée à corriger), gage d'authenticité.
 ## 2. Team management *(1 page max.)*
 
 **Comment travaillons-nous ? Quel est notre planning ?**
-*(Section à adapter avec vos prénoms et votre organisation réelle.)*
 
-Nous sommes une équipe de **3 personnes**, coordonnée via un **dépôt Git** partagé.
+Nous sommes une équipe de **3 personnes**, coordonnée via un **dépôt Git** partagé
+([barbiernathan2005/PROJET-DATA-SCIENCE](https://github.com/barbiernathan2005/PROJET-DATA-SCIENCE)).
 
-**Répartition des rôles (proposition) :**
-- **[Prénom 1] — Données & nettoyage :** chargement, sanity checks, encodage des
+**Répartition des rôles :**
+- **Haffsa — Données & nettoyage :** chargement, sanity checks, encodage des
   catégories, gestion des valeurs manquantes.
-- **[Prénom 2] — Visualisation & features maison :** figures, conception et
+- **Nathan — Visualisation & features maison :** figures, conception et
   justification des indices, vérification de leur pertinence.
-- **[Prénom 3] — Modélisation & storytelling :** régression, validation croisée,
+- **Thibaud — Modélisation & storytelling :** régression, validation croisée,
   interprétation, rédaction du récit et des slides.
 
 **Planning (calendrier du cours) :**
@@ -71,7 +83,7 @@ prises **collectivement**.
 est `DAILY_STRESS`, un score de stress quotidien de **0 (aucun) à 5 (très stressé)**,
 traité comme continu. Les explicatives sont de deux types :
 - **~20 variables numériques** de mode de vie : `SLEEP_HOURS`, `DAILY_STEPS`,
-  `SOCIAL_NETWORK`, `CORE_CIRCLE`, `SUPPORTING_OTHERS`, `DAILY_MEDITATION`, `FLOW`,
+  `SOCIAL_NETWORK`, `CORE_CIRCLE`, `SUPPORTING_OTHERS`, `WEEKLY_MEDITATION`, `FLOW`,
   `TIME_FOR_PASSION`, `LOST_VACATION`, `DAILY_SHOUTING`, `SUFFICIENT_INCOME`,
   `PERSONAL_AWARDS`, etc. ;
 - **2 variables catégorielles** : `AGE` (tranches) et `GENDER`.
@@ -87,7 +99,7 @@ traité comme continu. Les explicatives sont de deux types :
 bleu = négative), axe partant de zéro, palette à deux couleurs lisible (pas d'arc-en-
 ciel). *Lecture :* aucune variable ne domine — les corrélations sont **modérées** —, ce
 qui motive notre travail de combinaison (section 4). Du côté « stress » ressortent
-`DAILY_SHOUTING` et `LOST_VACATION` ; du côté « apaisement », `DAILY_MEDITATION`,
+`DAILY_SHOUTING` et `LOST_VACATION` ; du côté « apaisement », `WEEKLY_MEDITATION`,
 `SLEEP_HOURS` et `SUFFICIENT_INCOME`.
 
 ![Coefficients du modèle de régression](figures/02_coefficients_base.png)
@@ -109,7 +121,7 @@ brutes selon des hypothèses de bon sens :
 
 1. **`SOCIAL_SUPPORT` = CORE_CIRCLE + SOCIAL_NETWORK + SUPPORTING_OTHERS.**
    *Hypothèse :* le soutien social amortit le stress (Cohen & Wills, 1985).
-2. **`HEALTHY_HABITS` = SLEEP_HOURS + DAILY_STEPS + DAILY_MEDITATION + FRUITS_VEGGIES.**
+2. **`HEALTHY_HABITS` = SLEEP_HOURS + DAILY_STEPS + WEEKLY_MEDITATION + FRUITS_VEGGIES.**
    *Hypothèse :* une même hygiène de vie, dont les comportements se cumulent.
 3. **`OVERWORK` = LOST_VACATION + DAILY_SHOUTING − TIME_FOR_PASSION.**
    *Hypothèse :* proxy de surmenage (beaucoup de congés non pris et d'irritabilité,
@@ -130,8 +142,8 @@ brutes selon des hypothèses de bon sens :
 **Trois indices sur quatre sont très pertinents** — `OVERWORK` dépasse même toutes les
 variables brutes. Mais `SOCIAL_SUPPORT` **échoue**, et ce résultat est le plus riche
 d'enseignement. En inspectant ses composantes (Figure 2), on voit qu'elles se
-**contredisent** : un grand réseau social (`SOCIAL_NETWORK`, coef. **+0.085**) et le fait
-d'aider beaucoup les autres (`SUPPORTING_OTHERS`, **+0.063**) vont de pair avec **plus**
+**contredisent** : un grand réseau social (`SOCIAL_NETWORK`, coef. **+0.09**) et le fait
+d'aider beaucoup les autres (`SUPPORTING_OTHERS`, **+0.07**) vont de pair avec **plus**
 de stress — sans doute parce que les personnes très sollicitées socialement sont aussi
 plus occupées/stressées. En les additionnant avec l'entourage proche, les effets
 s'annulent. **Leçon :** une feature combinée n'est utile que si ses composantes
@@ -161,8 +173,8 @@ sur le train ; **validation croisée 5-fold** pour une estimation robuste.
 - R² (modèle à 23 variables, test) = **0.187**
 - R² (modèle à 4 indices maison, test) = **0.125** ; en **5-fold = 0.143 ± 0.013**
 - **Font monter** le stress : `DAILY_SHOUTING` (**+0.32**), `LOST_VACATION` (**+0.18**),
-  `SOCIAL_NETWORK` (+0.09), `PERSONAL_AWARDS` (+0.07).
-- **Font baisser** le stress : `DAILY_MEDITATION` (**−0.15**), `GENDER_Male` (−0.15),
+  `SOCIAL_NETWORK` (+0.09), `PERSONAL_AWARDS` (+0.06).
+- **Font baisser** le stress : `WEEKLY_MEDITATION` (**−0.15**), `GENDER_Male` (−0.15),
   `SLEEP_HOURS` (−0.13), `SUFFICIENT_INCOME` (−0.12), `TIME_FOR_PASSION` (−0.09).
 
 **Interprétation.** Le mode de vie explique environ **15 à 19 % de la variance** du

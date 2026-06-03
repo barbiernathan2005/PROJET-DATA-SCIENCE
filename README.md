@@ -2,7 +2,7 @@
 
 Projet **Introduction to Data Processing** — MAM3, Université Côte d'Azur, 2025-2026.
 
-Régression **linéaire** sur le dataset **réel** *Lifestyle & Wellbeing* (~12 700
+Régression **linéaire** sur le dataset **réel** *Lifestyle & Wellbeing* (**15 971**
 réponses, enquête Authentic-Happiness) pour expliquer le **stress quotidien**
 (`DAILY_STRESS`, 0-5) à partir du mode de vie.
 
@@ -35,8 +35,10 @@ slides et le rapport.
 | `analyse_stress_wellbeing.py` | Analyse complète : nettoyage → visualisation → régression → features maison → validation |
 | `slides_storytelling.md` | Contenu des 5 slides de l'oral + script + Q&A anticipé |
 | `report.md` | Rapport écrit (7 sections) |
-| `figures/` | Graphiques générés par le script |
+| `figures/` | Graphiques générés par le script (dont `00_probleme1_synthetique.png`) |
 | `requirements.txt` | Dépendances Python |
+| `wellbeing.csv` | Données **réelles** *Lifestyle & Wellbeing* (15 972 lignes brutes) |
+| `Global_Mental_Health_Dataset_2025.csv` | Données **synthétiques** abandonnées (preuve du « Problème 1 », corrélations ≈ 0) |
 
 ## 🧭 Démarche (storytelling)
 1. **Problème 1** : un premier dataset « santé mentale » sans aucune corrélation → données **synthétiques**.
