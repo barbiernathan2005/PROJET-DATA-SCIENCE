@@ -29,8 +29,8 @@
 % Couleurs cohérentes avec les figures : rouge = ↑ stress, bleu = ↓ stress
 \definecolor{stressup}{HTML}{D1495B}
 \definecolor{stressdown}{HTML}{3A6EA5}
-\newcommand{\up}[1]{\textcolor{stressup}{#1}}
-\newcommand{\down}[1]{\textcolor{stressdown}{#1}}
+\newcommand{\hot}[1]{\textcolor{stressup}{#1}}
+\newcommand{\cool}[1]{\textcolor{stressdown}{#1}}
 
 \title{Le stress se lit-il dans notre mode de vie ?}
 \subtitle{Introduction to Data Processing --- MAM3, 2025-2026}
@@ -104,18 +104,18 @@
         \toprule
         \textbf{Feature maison} & \textbf{Corr.\ stress} \\
         \midrule
-        \textbf{OVERWORK} \scriptsize(congés + irritab.\ $-$ passions) & \up{$+0{,}35$} \\
-        \textbf{HEALTHY\_HABITS} \scriptsize(sommeil+activité+médit.) & \down{$-0{,}22$} \\
-        \textbf{SLEEP $\times$ FLOW} \scriptsize(sommeil $\times$ immersion) & \down{$-0{,}16$} \\
-        \textbf{SOCIAL\_SUPPORT} \scriptsize(entourage+réseau+entraide) & \down{$-0{,}06$} \\
+        \textbf{OVERWORK} \scriptsize(congés + irritab.\ $-$ passions) & \hot{$+0{,}35$} \\
+        \textbf{HEALTHY\_HABITS} \scriptsize(sommeil+activité+médit.) & \cool{$-0{,}22$} \\
+        \textbf{SLEEP $\times$ FLOW} \scriptsize(sommeil $\times$ immersion) & \cool{$-0{,}16$} \\
+        \textbf{SOCIAL\_SUPPORT} \scriptsize(entourage+réseau+entraide) & \cool{$-0{,}06$} \\
         \bottomrule
       \end{tabular}
       \medskip
       \begin{itemize}
-        \item 3 marchent --- surtout \up{\textbf{OVERWORK}}, meilleur signal de
+        \item 3 marchent --- surtout \hot{\textbf{OVERWORK}}, meilleur signal de
           l'étude.
-        \item \textbf{Pourquoi l'échec ?} réseau (\up{$+0{,}09$}) et entraide
-          (\up{$+0{,}07$}) vont avec \textbf{plus} de stress $\Rightarrow$ ils annulent
+        \item \textbf{Pourquoi l'échec ?} réseau (\hot{$+0{,}09$}) et entraide
+          (\hot{$+0{,}07$}) vont avec \textbf{plus} de stress $\Rightarrow$ ils annulent
           l'effet de l'entourage proche.
       \end{itemize}
     \end{column}
@@ -141,11 +141,11 @@
         \item Régression \textbf{linéaire}, split \textbf{80-20} $+$ \textbf{5-fold}.
         \item $R^2$ (23 var) $=$ \textbf{0,19} $\cdot$ $R^2$ (4 indices) $=$
           \textbf{0,13} $\cdot$ 5-fold $=$ \textbf{0,14 $\pm$ 0,01} (stable).
-        \item \up{\textbf{Montent}} : irritabilité \up{$+0{,}32$}, congés non pris
-          \up{$+0{,}18$}.
-        \item \down{\textbf{Baissent}} : méditation \down{$-0{,}15$}, sommeil
-          \down{$-0{,}13$}, revenu suffisant \down{$-0{,}12$}, temps passions
-          \down{$-0{,}09$}.
+        \item \hot{\textbf{Montent}} : irritabilité \hot{$+0{,}32$}, congés non pris
+          \hot{$+0{,}18$}.
+        \item \cool{\textbf{Baissent}} : méditation \cool{$-0{,}15$}, sommeil
+          \cool{$-0{,}13$}, revenu suffisant \cool{$-0{,}12$}, temps passions
+          \cool{$-0{,}09$}.
       \end{itemize}
     \end{column}
     \begin{column}{0.42\textwidth}
@@ -166,7 +166,7 @@
   \begin{itemize}
     \item Leviers \textbf{actionnables} : congés, méditation, sommeil, temps pour ses
       passions.
-    \item Notre feature \up{\textbf{OVERWORK}} $=$ meilleur prédicteur ($+0{,}35$).
+    \item Notre feature \hot{\textbf{OVERWORK}} $=$ meilleur prédicteur ($+0{,}35$).
     \item Un \textbf{échec} riche : \texttt{SOCIAL\_SUPPORT} rappelle qu'une hypothèse
       se \textbf{vérifie} (corrélation $\neq$ intuition).
     \item Limites : auto-déclaré, échelle 0-5, \textbf{corrélation $\neq$ causalité}.

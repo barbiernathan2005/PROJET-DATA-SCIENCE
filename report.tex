@@ -30,8 +30,8 @@
 % Couleurs cohérentes avec les figures : rouge = ↑ stress, bleu = ↓ stress
 \definecolor{stressup}{HTML}{D1495B}
 \definecolor{stressdown}{HTML}{3A6EA5}
-\newcommand{\up}[1]{\textcolor{stressup}{#1}}
-\newcommand{\down}[1]{\textcolor{stressdown}{#1}}
+\newcommand{\hot}[1]{\textcolor{stressup}{#1}}
+\newcommand{\cool}[1]{\textcolor{stressdown}{#1}}
 \newcommand{\cmark}{\textcolor{stressdown}{\ding{51}}}
 \newcommand{\xmark}{\textcolor{stressup}{\ding{55}}}
 
@@ -162,7 +162,7 @@ conservées). \texttt{AGE} et \texttt{GENDER} ont été encodées en \textbf{one
   \centering
   \includegraphics[width=0.70\linewidth]{01_correlations.png}
   \caption{Corrélation de chaque variable avec le stress. Barres horizontales triées
-    (\up{rouge} = corrélation positive, \down{bleu} = négative), axe partant de zéro,
+    (\hot{rouge} = corrélation positive, \cool{bleu} = négative), axe partant de zéro,
     palette à deux couleurs. \textit{Lecture :} aucune variable ne domine --- les
     corrélations sont \textbf{modérées} ---, ce qui motive notre travail de combinaison
     (section~\ref{sec:features}). Du côté « stress » ressortent \texttt{DAILY\_SHOUTING}
@@ -176,7 +176,7 @@ conservées). \texttt{AGE} et \texttt{GENDER} ont été encodées en \textbf{one
   \includegraphics[width=0.70\linewidth]{02_coefficients_base.png}
   \caption{Coefficients du modèle (variables standardisées) : poids et signe de chaque
     variable dans la régression. \textit{Lecture :} répond visuellement à la question
-    business --- qui fait \up{monter} ou \down{baisser} le stress.}
+    business --- qui fait \hot{monter} ou \cool{baisser} le stress.}
   \label{fig:coefbase}
 \end{figure}
 
@@ -214,10 +214,10 @@ variables brutes selon des hypothèses de bon sens :
   \toprule
   \textbf{Feature maison} & \textbf{Corrélation} & \textbf{Verdict} \\
   \midrule
-  \texttt{OVERWORK}       & $\up{+0{,}349}$  & \cmark\ le \textbf{signal le plus fort de toute l'étude} \\
-  \texttt{HEALTHY\_HABITS}& $\down{-0{,}218}$& \cmark\ pertinent (habitudes saines $\to$ moins de stress) \\
-  \texttt{SLEEP\_x\_FLOW} & $\down{-0{,}157}$& \cmark\ pertinent (l'interaction fonctionne) \\
-  \texttt{SOCIAL\_SUPPORT}& $\down{-0{,}055}$& \xmark\ quasi nul --- \textbf{échec instructif} \\
+  \texttt{OVERWORK}       & $\hot{+0{,}349}$  & \cmark\ le \textbf{signal le plus fort de toute l'étude} \\
+  \texttt{HEALTHY\_HABITS}& $\cool{-0{,}218}$& \cmark\ pertinent (habitudes saines $\to$ moins de stress) \\
+  \texttt{SLEEP\_x\_FLOW} & $\cool{-0{,}157}$& \cmark\ pertinent (l'interaction fonctionne) \\
+  \texttt{SOCIAL\_SUPPORT}& $\cool{-0{,}055}$& \xmark\ quasi nul --- \textbf{échec instructif} \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -227,8 +227,8 @@ variables brutes selon des hypothèses de bon sens :
 même toutes les variables brutes. Mais \texttt{SOCIAL\_SUPPORT} \textbf{échoue}, et ce
 résultat est le plus riche d'enseignement. En inspectant ses composantes
 (Figure~\ref{fig:coefbase}), on voit qu'elles se \textbf{contredisent} : un grand
-réseau social (\texttt{SOCIAL\_NETWORK}, coef.\ $\up{+0{,}09}$) et le fait d'aider
-beaucoup les autres (\texttt{SUPPORTING\_OTHERS}, $\up{+0{,}07}$) vont de pair avec
+réseau social (\texttt{SOCIAL\_NETWORK}, coef.\ $\hot{+0{,}09}$) et le fait d'aider
+beaucoup les autres (\texttt{SUPPORTING\_OTHERS}, $\hot{+0{,}07}$) vont de pair avec
 \textbf{plus} de stress --- sans doute parce que les personnes très sollicitées
 socialement sont aussi plus occupées/stressées. En les additionnant avec l'entourage
 proche, les effets s'annulent. \textbf{Leçon :} une feature combinée n'est utile que si
@@ -268,11 +268,11 @@ une estimation robuste.
   \item $R^2$ (modèle à 23 variables, test) $=$ \textbf{0,187}
   \item $R^2$ (modèle à 4 indices maison, test) $=$ \textbf{0,125} ; en
     \textbf{5-fold $=$ 0,143 $\pm$ 0,013}
-  \item \up{\textbf{Font monter}} le stress : \texttt{DAILY\_SHOUTING}
-    ($\up{+0{,}32}$), \texttt{LOST\_VACATION} ($\up{+0{,}18}$), \texttt{SOCIAL\_NETWORK}
+  \item \hot{\textbf{Font monter}} le stress : \texttt{DAILY\_SHOUTING}
+    ($\hot{+0{,}32}$), \texttt{LOST\_VACATION} ($\hot{+0{,}18}$), \texttt{SOCIAL\_NETWORK}
     ($+0{,}09$), \texttt{PERSONAL\_AWARDS} ($+0{,}06$).
-  \item \down{\textbf{Font baisser}} le stress : \texttt{WEEKLY\_MEDITATION}
-    ($\down{-0{,}15}$), \texttt{GENDER\_Male} ($-0{,}15$), \texttt{SLEEP\_HOURS}
+  \item \cool{\textbf{Font baisser}} le stress : \texttt{WEEKLY\_MEDITATION}
+    ($\cool{-0{,}15}$), \texttt{GENDER\_Male} ($-0{,}15$), \texttt{SLEEP\_HOURS}
     ($-0{,}13$), \texttt{SUFFICIENT\_INCOME} ($-0{,}12$), \texttt{TIME\_FOR\_PASSION}
     ($-0{,}09$).
 \end{itemize}
