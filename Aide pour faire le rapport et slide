@@ -1,0 +1,163 @@
+# Résumé du projet — Prédiction du prix de voitures d'occasion
+
+Document de travail destiné au groupe pour rédiger le rapport (10 pages) et les 5 slides.
+Il reprend, étape par étape, ce qu'on a fait, **pourquoi** on l'a fait, et où chaque élément
+se case dans les consignes.
+
+---
+
+## 0. Cadre et problématique métier
+
+- **Jeu de données** : `cars_dataset.csv` — base de voitures d'occasion (marché UK), **72 435 lignes**, **10 colonnes** :
+  `modele, annee, prix, transmission, kilometrage, type_carburant, taxe, mpg, cylindree, marque`.
+- **Problématique métier retenue** : *estimer le prix de revente d'une voiture d'occasion à partir de ses
+  caractéristiques techniques*. Utilité : aider un vendeur ou un acheteur à savoir si un prix affiché est cohérent
+  avec le marché.
+- **Type de cible** : `prix` est une variable **continue** → c'est ce qui justifie le choix d'une **régression linéaire**
+  (et non logistique, qui serait pour du binaire, ni softmax/multinomiale pour plusieurs classes). C'est un point à
+  rappeler explicitement à l'étape 4.
+- **À faire par le groupe** : créer le dépôt **Git** dès maintenant et mettre l'URL dans le rapport (obligatoire).
+
+---
+
+## 1. Étape 1 — Problématique & Data Wrangling
+
+### Nettoyage et cohérence
+- **Renommage des colonnes en français** pour la lisibilité (`year→annee`, `mileage→kilometrage`, `price→prix`, etc.).
+- **Suppression de la colonne d'index** parasite `Unnamed: 0` si présente.
+- **Doublons** : suppression des lignes dupliquées → **~842 doublons retirés** (de 72 435 à **71 593 lignes**).
+- **Cohérence des années** : on a posé un garde-fou pour éliminer les années aberrantes (âge négatif ou implausible).
+  Sur **ce** dataset, les années vont de **1996 à 2020**, donc aucune valeur aberrante n'a finalement été supprimée —
+  le garde-fou reste documenté comme bonne pratique.
+- **Regroupement de catégorie rare** : `Electric` (seulement 5 voitures) fusionné avec `Other` dans `type_carburant`,
+  car trop peu d'observations pour être exploitable seul.
+
+### Valeurs manquantes (MCAR / MAR / MNAR)
+- Le dataset ne contient **aucune valeur manquante** (0 NaN sur toutes les colonnes).
+- On a tout de même mis en place une **stratégie d'imputation documentée** : **médiane** pour le numérique, **mode** pour
+  le catégoriel. Comme il n'y a pas de manquants, il n'y a pas eu de suppression de lignes (listwise deletion) ni
+  d'imputation effective — à présenter comme un choix robuste *si* des manquants étaient apparus.
+
+### Encodage des catégories
+- **One-Hot Encoding** (`pd.get_dummies(..., drop_first=True)`) pour `transmission` et `type_carburant`.
+- **Choix justifié** : ce sont des catégories **non ordonnées** → le One-Hot évite d'introduire un faux ordre
+  (ce qu'aurait fait un LabelEncoder). Le `drop_first=True` évite la colinéarité parfaite entre dummies.
+- `modele` (**146 modalités**) **non encodé** : un One-Hot exploserait la dimensionnalité (**fléau de la dimensionnalité**).
+  `marque` (7 modalités) a été explorée visuellement mais pas mise dans le modèle final (piste d'amélioration).
+
+---
+
+## 2. Étape 2 — Visualisation des données & storytelling
+
+Graphiques produits (tous avec **titres et axes en français**) :
+- **Matrice de corrélation** (heatmap) en n'affichant **que le triangle inférieur** : diagonale et triangle supérieur
+  masqués car la matrice est symétrique → application directe du principe **data-ink de Tufte** (on retire l'encre
+  redondante qui n'apporte aucune information).
+- **Histogramme** de l'âge des véhicules, **countplots** (marque, carburant, transmission), **boxplots** du prix par
+  catégorie, **KDE** du prix par transmission et par carburant, et un **pairplot**.
+- **Nuages multidimensionnels** : le prix encodé **en couleur** sur tous les croisements de **2 variables** puis de
+  **3 variables** (donc jusqu'à 4 dimensions visualisées : 3 axes + couleur).
+
+### Choix de data-viz importants (à valoriser dans le rapport)
+- Le nuage initial était illisible car les points se concentraient à cause des **valeurs extrêmes**.
+- Solutions appliquées : **échelle de couleur par paliers de 250 €** (`BoundaryNorm`) calée sur la tranche des prix
+  les plus courants (10ᵉ–90ᵉ percentile), palette **turbo** (plus contrastée), et **axes zoomés** sur l'intervalle
+  1 %–99 % pour que le nuage remplisse le cadre. C'est un bon exemple de hiérarchie visuelle au service du message.
+
+### Constats tirés des graphiques (storytelling)
+- **Plus récente + moins kilométrée + plus grosse cylindrée → plus chère.**
+- **mpg élevé + voiture jeune + peu kilométrée → plus chère.**
+- Corrélations avec le prix : `cylindree` **+0,63** (la plus forte), `taxe` +0,35, `mpg` −0,33,
+  `kilometrage` −0,43, `age` −0,52.
+
+---
+
+## 3. Étape 3 — Ingénierie des caractéristiques (Feature Engineering)
+
+### Sélection / réduction de dimension
+- **Suppression de `km_par_an`** (kilometrage / (age+1)) car **corrélée à 0,96 avec `kilometrage`** : redondante,
+  elle n'apportait rien et risquait d'ajouter de la colinéarité. C'est notre démarche de **sélection de variables**
+  (alternative au PCA mentionné dans les consignes).
+- **`modele` écarté** pour cause de trop forte cardinalité (fléau de la dimensionnalité).
+
+### Features construites (handcrafted) testées
+Toutes issues des interactions repérées sur les plots :
+
+| Feature | Formule | R² univarié | Gain ajouté au modèle de base |
+|---|---|---|---|
+| `cylindree_sur_age` | cylindree / (age+1) | **0,641** | **+0,070** |
+| `km_fois_age` | kilometrage × age | −0,076 | +0,024 |
+| `age_carre` | age² | −0,016 | +0,024 |
+| `cylindree_fois_age` | cylindree × age | −0,221 | +0,023 |
+| `mpg_sur_age` | mpg / (age+1) | −0,262 | +0,002 |
+
+### Méthode de sélection de la meilleure feature
+- Pour chaque candidate : calcul du **R² en cross-validation 5-fold**, à la fois **seule** (univarié) et **ajoutée au
+  modèle multiple de base**, puis comparaison des gains de R².
+- **Point méthodologique à mettre en avant** : on ne juge pas une feature à la **taille de son coefficient**
+  (qui dépend de l'échelle de la variable), mais au **gain réel de R²**.
+
+### Résultat
+- **Feature retenue : `cylindree_sur_age`** = cylindree / (age + 1).
+- Elle explique à elle seule **R² = 0,64** (loin devant `cylindree` brute à 0,25) et fait gagner **+0,070** de R²
+  au modèle (0,653 → 0,722 en cross-validation).
+- **Interprétation métier** : elle capture l'interaction *motorisation × jeunesse* — un gros moteur **sur une voiture
+  récente** se vend cher — ce que ni `cylindree` ni `age` ne voient séparément.
+
+### Pistes d'amélioration (pour la conclusion)
+- **Transformation log de la cible** (`np.log1p(prix)`) : le prix est très asymétrique, ce qui fait souvent gagner
+  +0,05 à +0,10 de R².
+- **Standardisation** des variables pour rendre le graphique des coefficients réellement interprétable.
+- Ajout possible de `marque` en One-Hot (7 modalités, raisonnable).
+
+---
+
+## 4. Étape 4 — Modélisation & Validation
+
+- **Modèle** : **régression linéaire multiple** (`LinearRegression`).
+- **Variables finales** : `age`, `kilometrage`, `cylindree`, `mpg`, + One-Hot de `transmission` et `type_carburant`,
+  + la feature construite `cylindree_sur_age`.
+- **Validation** : **holdout 80/20** (`random_state=42`) **et** **validation croisée k-fold (k=5)** pour vérifier la
+  stabilité.
+
+### Résultats du modèle final
+- **R² (jeu de test) = 0,80**
+- **RMSE = 4 188 €**, **MAE = 2 763 €**
+- **R² moyen en cross-validation = 0,722** (écart-type 0,042)
+
+Lecture : le modèle explique environ **80 % de la variance du prix** sur des données qu'il n'a pas vues, avec une erreur
+moyenne d'environ **2 760 €**. La cross-validation (0,72 ± 0,04) confirme qu'il n'y a pas de surajustement marqué.
+
+---
+
+## 5. Correspondance avec la structure du rapport (10 pages)
+
+- **But métier (1 p)** : section 0 ci-dessus + reformuler clairement la question et l'utilité.
+- **Gestion d'équipe et planning (1 p)** : *à rédiger par le groupe* (répartition des rôles, calendrier 01→05/06).
+- **Visualisation des données (2 p)** : section 2 + captures des graphiques (heatmap triangulaire, nuages couleur, boxplots) et les constats.
+- **Ingénierie des caractéristiques (2 p)** : section 3 + le tableau de comparaison des features + justification de `cylindree_sur_age` et de la suppression de `km_par_an`.
+- **Régression choisie et résultats (2 p)** : section 4 + justification du choix linéaire (cible continue) + métriques + graphique « réel vs prédit ».
+- **Conclusion et pistes d'amélioration (1 p)** : performance atteinte + pistes (log de la cible, standardisation, ajout de la marque).
+- **Bibliographie (1 p)** : *à compléter* (source Kaggle du dataset, doc scikit-learn, principes de Tufte).
+- **Ne pas oublier** : l'**URL du dépôt Git**.
+
+---
+
+## 6. Correspondance avec les 5 slides
+
+1. **But métier** : estimer le prix d'une voiture d'occasion à partir de ses caractéristiques ; cible continue → régression linéaire.
+2. **Description des données** : 71 593 voitures après nettoyage, 10 variables, prix moyen ~16 580 € (de 495 € à 145 000 €) ; nettoyage (doublons, Electric→Other, age) et One-Hot.
+3. **Caractéristiques créées manuellement** : `cylindree_sur_age` (cylindrée/âge) — l'interaction motorisation × jeunesse, +0,07 de R² ; mention de `km_par_an` écartée pour redondance.
+4. **Régression choisie** : régression linéaire multiple, validation holdout + 5-fold ; R² test 0,80, RMSE 4 188 €, MAE 2 763 €.
+5. **Conclusion** : modèle solide (~80 % de variance expliquée) ; pistes d'amélioration (log du prix, standardisation, marque).
+
+---
+
+## 7. À finir par le groupe (checklist)
+
+- [ ] Créer le dépôt Git et insérer l'URL dans le rapport.
+- [ ] Rédiger la page « gestion d'équipe et planning ».
+- [ ] Formuler explicitement la problématique métier (1 phrase claire).
+- [ ] Insérer les captures des graphiques dans le rapport / les slides.
+- [ ] Rédiger la bibliographie.
+- [ ] (Optionnel mais valorisant) Tester la transformation log de la cible et la mentionner en amélioration.
