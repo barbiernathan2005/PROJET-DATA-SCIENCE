@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-probleme1_mental_health.py
-==========================
-Génère la figure du « Problème 1 » : la matrice de corrélation du dataset
-SYNTHÉTIQUE de santé mentale (`Global_Mental_Health_Dataset_2025.csv`).
-
-But : montrer que toutes les corrélations sont ≈ 0 — la signature de données
-fabriquées, et la raison pour laquelle nous avons changé de sujet (voir le rapport).
-
-    python probleme1_mental_health.py   ->   figures/00_probleme1_synthetique.png
-"""
-
 import os
 import numpy as np
 import pandas as pd
@@ -19,34 +6,81 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 os.makedirs("figures", exist_ok=True)
-
 df = pd.read_csv("Global_Mental_Health_Dataset_2025.csv")
 
-# On encode le niveau de stress en nombre pour pouvoir le corréler aux autres variables.
+# --- Encodage du niveau de stress (ordinal -> numérique) ---
 order = {"Low": 0, "Medium": 1, "Moderate": 1, "High": 2, "Severe": 3}
+
+# Garde-fou 1 : toutes les étiquettes sont-elles couvertes ?
+# Sinon .map() renvoie des NaN SILENCIEUX qui faussent les corrélations.
+uniques = df["Stress_Level"].dropna().unique()
+non_mappees = [v for v in uniques if v not in order]
+if non_mappees:
+    raise ValueError(f"Étiquettes non prévues dans `order` : {non_mappees}")
+
 df["Stress_num"] = df["Stress_Level"].map(order)
 
 cols = ["Age", "Depression_Score", "Anxiety_Score", "Sleep_Hours",
         "Days_of_Treatment", "Stress_num"]
-corr = df[cols].corr()
 
-# Corrélation maximale (hors diagonale) : doit être proche de 0.
-off = corr.where(~np.eye(len(cols), dtype=bool)).abs()
-cmax = float(np.nanmax(off.values))
-print("Corrélation |r| max (hors diagonale) :", round(cmax, 3))
-print("Sommeil vs stress :", round(corr.loc["Sleep_Hours", "Stress_num"], 3))
+# Garde-fou 2 : combien de NaN ? (.corr() les supprime en pairwise, en silence)
+print("NaN par colonne :\n", df[cols].isna().sum(), sep="")
+print("Lignes complètes :", df[cols].dropna().shape[0], "/", len(df))
 
-plt.figure(figsize=(6, 5))
-plt.imshow(corr.values, vmin=-1, vmax=1, cmap="coolwarm")
-plt.colorbar(label="corrélation de Pearson")
-plt.xticks(range(len(cols)), cols, rotation=45, ha="right")
-plt.yticks(range(len(cols)), cols)
-for i in range(len(cols)):
-    for j in range(len(cols)):
-        plt.text(j, i, f"{corr.values[i, j]:.2f}", ha="center", va="center",
-                 color="black", fontsize=8)
-plt.title(f"Dataset synthétique : corrélations ≈ 0 (|r| max = {cmax:.2f})")
-plt.tight_layout()
-plt.savefig("figures/00_probleme1_synthetique.png", dpi=130)
-plt.close()
-print("Figure enregistrée : figures/00_probleme1_synthetique.png")
+# Garde-fou 3 : Pearson (linéaire) ET Spearman (monotone).
+# Pearson ≈ 0 ne prouve QUE l'absence de relation linéaire.
+corr   = df[cols].corr(method="pearson")
+corr_s = df[cols].corr(method="spearman")
+
+print("\nMatrice de Pearson :\n", corr.round(2), sep="")
+print("\nMatrice de Spearman :\n", corr_s.round(2), sep="")
+print("Sommeil vs stress (Pearson) :", round(corr.loc["Sleep_Hours", "Stress_num"], 3))
+
+# Garde-fou 4 : on regarde AUSSI toutes les colonnes numériques (anti cherry-pick)
+num = df.select_dtypes(include=[np.number])
+full_off = num.corr().where(~np.eye(num.shape[1], dtype=bool)).abs()
+print("Sur TOUTES les colonnes numériques, |r| max :",
+      round(float(np.nanmax(full_off.values)), 3))
+
+
+def plot_corr(corr, titre, chemin, label_cbar):
+    """Heatmap triangle inférieur strict (diagonale + triangle sup. masqués)."""
+    cmax = float(np.nanmax(corr.where(~np.eye(len(corr), dtype=bool)).abs().values))
+
+    mask = np.triu(np.ones_like(corr.values, dtype=bool))   # diag + triangle sup.
+    corr_plot = np.ma.masked_array(corr.values, mask=mask)
+
+    cmap = plt.cm.coolwarm.copy()
+    cmap.set_bad("white")                                   # cases masquées en blanc
+
+    plt.figure(figsize=(6.5, 5))
+    plt.imshow(corr_plot, vmin=-1, vmax=1, cmap=cmap)
+    plt.colorbar(label=label_cbar)
+    plt.xticks(range(len(corr)), corr.columns, rotation=45, ha="right")
+    plt.yticks(range(len(corr)), corr.columns)
+
+    for i in range(len(corr)):
+        for j in range(len(corr)):
+            if i > j:                                       # triangle inférieur strict
+                plt.text(j, i, f"{corr.values[i, j]:.2f}", ha="center", va="center",
+                         color="black", fontsize=8)
+
+    plt.title(f"{titre}\n(|r| max = {cmax:.2f})", fontsize=10, pad=10)
+    plt.tight_layout()
+    plt.savefig(chemin, dpi=130)
+    plt.close()
+    return cmax
+
+
+cmax = plot_corr(corr, "Dataset synthétique : corrélations ≈ 0 (Pearson)",
+                 "figures/00_probleme1_synthetique.png",
+                 "corrélation de Pearson")
+cmax_s = plot_corr(corr_s, "Dataset synthétique : corrélations ≈ 0 (Spearman)",
+                   "figures/00_probleme1_spearman.png",
+                   "corrélation de Spearman (rho)")
+
+print("\nPearson  |r|   max (hors diag.) :", round(cmax, 3))
+print("Spearman |rho| max (hors diag.) :", round(cmax_s, 3))
+print("Figures enregistrées :")
+print("  figures/00_probleme1_synthetique.png")
+print("  figures/00_probleme1_spearman.png")
