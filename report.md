@@ -186,7 +186,7 @@ réelles racontent une histoire ; des données synthétiques, non.
 ## 7. List of references *(1 page max.)*
 
 1. **Dataset.** *100,000 UK Used Car Data set* (7 marques fusionnées), Kaggle.
-   Présentation/EDA : https://www.kaggle.com/code/harishkumardatalab/eda-of-multibrand-used-car-dataset
+   Présentation/EDA : https://www.kaggle.com/code/harishkumardatalab/eda-of-multibrand-used-car-dataset?select=used_cars.csv
    — CSV utilisé (miroir) : https://github.com/Ajinkya017/Car_Dataset
 2. **Cours.** L. Fillatre, *Introduction to Data Processing*, Université Côte d'Azur,
    Polytech Nice Sophia, 2025-2026 (Lectures 1 à 4).
